@@ -342,7 +342,6 @@
           "subnetName": {
             "value": "AppGW-SN"
           },
-          "vnetName": {},
           "nsgName": {
             "value": "AppGW-NSG"
           },
@@ -378,9 +377,6 @@
           "subnetName": {
             "value": "Shared-SN"
           },
-          "subnetAddressPrefix": {
-            "value": "[reference(concat(subscription().id,'/resourceGroups/', parameters('resourceGroup') , '/providers/Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/Shared-SN'), '2018-03-01').addressPrefix]"
-          },
           "nsgName": {
             "value": "Shared-NSG"
           },
@@ -413,9 +409,6 @@
           },
           "subnetName": {
             "value": "APIM-SN"
-          },
-          "subnetAddressPrefix": {
-            "value": "[reference(concat(subscription().id,'/resourceGroups/',parameters('resourceGroup') ,'/providers/Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/APIM-SN'), '2018-03-01').addressPrefix]"
           },
           "nsgName": {
             "value": "APIM-NSG"
@@ -462,9 +455,6 @@
           },
           "subnetName": {
             "value": "AKS-SN"
-          },
-          "subnetAddressPrefix": {
-            "value": "[reference(concat(subscription().id,'/resourceGroups/',parameters('resourceGroup') ,'/providers/Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/AKS-SN'), '2018-03-01').addressPrefix]"
           },
           "nsgName": {
             "value": "AKS-NSG"

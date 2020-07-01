@@ -14,9 +14,6 @@
           "description": "The name of the existing subnet."
         }
       },
-      "vnetName": {
-        "type": "string"
-      },
       "nsgName": {
           "type": "string"
       },
@@ -65,7 +62,7 @@
             "name": "[concat(parameters('virtualNetworkName'), '/', parameters('subnetName'))]",
             "location": "[resourceGroup().location]",
             "properties": {
-                "addressPrefix": "[reference(concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/', parameters('vnetName'), '/subnets/', parameters('subnetName')), '2018-03-01').addressPrefix]",
+                "addressPrefix": "[reference(concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'), '/subnets/', parameters('subnetName')), '2018-03-01').addressPrefix]",
                 "networkSecurityGroup": {
                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
                 }
