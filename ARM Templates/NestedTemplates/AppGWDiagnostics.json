@@ -10,6 +10,9 @@
         },
         "metrics": {
             "type": "array"
+        },
+        "appgwName": {
+            "type": "string"
         }
     },
     "variables": {
@@ -35,7 +38,7 @@
     "resources": [
         {
             "type": "Microsoft.Network/applicationGateways/providers/diagnosticSettings",
-            "name": "loganalytics",
+            "name": "[concat(parameters('appgwName'),'/microsoft.insights/loganlytics')]",
             "dependsOn": [],
             "apiVersion": "2017-05-01-preview",
             "properties": {

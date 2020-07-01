@@ -670,6 +670,9 @@
               "value": [
                 "AllMetrics"
               ]
+          },
+          "appgwName": {
+            "value": "[variables('applicationGatewayName')]"
           }
         }
       }  
