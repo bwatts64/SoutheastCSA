@@ -90,7 +90,7 @@
     },
     "keyVaultResourceGroup": {
       "type": "string",
-      "defaultValue": "testarm"
+      "defaultValue": "Lab"
     },
     "certificates": {
       "type": "array",
@@ -266,11 +266,11 @@
     "deployLogAnalyticsTemplateURL": "[concat(variables('gitUri'),'/Log_Analytics_Workspace.json')]",
     "deployAppGWDiagnosticsTemplateURL": "[concat(variables('gitUri'),'/AppGWDiagnostics.json')]",
     "deployKeyVaultTemplateURL": "[concat(variables('gitUri'),'/KeyVault.json')]",
-    "saName": "[concat(toLower(parameters('deploymentPrefix')),'_sa',toLower(uniqueString(parameters('resourceGroup'))))]",
-    "laName": "[concat(parameters('deploymentPrefix'),'_la',uniqueString(parameters('resourceGroup')))]",
-    "vnetName": "[concat(parameters('deploymentPrefix'),'_vnet',uniqueString(parameters('resourceGroup')))]",
-    "applicationGatewayName": "[concat(parameters('deploymentPrefix'),'_appgw',uniqueString(parameters('resourceGroup')))]",
-    "keyVaultName": "[concat(parameters('deploymentPrefix'),'_kv',uniqueString(parameters('resourceGroup')))]"
+    "saName": "[concat(toLower(parameters('deploymentPrefix')),'sa',toLower(uniqueString(parameters('resourceGroup'))))]",
+    "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
+    "vnetName": "[concat(parameters('deploymentPrefix'),'vnet',uniqueString(parameters('resourceGroup')))]",
+    "applicationGatewayName": "[concat(parameters('deploymentPrefix'),'appgw',uniqueString(parameters('resourceGroup')))]",
+    "keyVaultName": "labVaultwb"
   },
   "resources": [
     {
@@ -523,32 +523,12 @@
       }
     },
     {
-       "name": "deployKeyVault",
-      "type": "Microsoft.Resources/deployments",
-      "resourceGroup": "[parameters('keyVaultResourceGroup')]",
-      "apiVersion": "2017-05-10",
-      "dependsOn": [],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('deployKeyVaultTemplateURL')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "keyVaultName": {
-              "value": "[variables('keyVaultName')]"
-          }
-        }
-      }
-    },
-    {
       "name": "deployKeyVaultAccess",
       "type": "Microsoft.Resources/deployments",
       "resourceGroup": "[parameters('keyVaultResourceGroup')]",
       "apiVersion": "2017-05-10",
       "dependsOn": [
-        "createManagedIdentity",
-        "deployKeyVault"
+        "createManagedIdentity"
       ],
       "properties": {
         "mode": "Incremental",
@@ -573,36 +553,6 @@
           },
           "objectId": {
               "value": "[reference('createManagedIdentity').outputs.principalId.value]"
-          }
-        }
-      }
-    },
-    {
-      "name": "addKeyVaultSecret",
-      "type": "Microsoft.Resources/deployments",
-      "resourceGroup": "[parameters('keyVaultResourceGroup')]",
-      "apiVersion": "2017-05-10",
-      "dependsOn": [
-        "deployKeyVault"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('addKeyVaultSecretTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "keyVaultName": {
-              "value": "[variables('keyVaultName')]"
-          },
-          "secretName": {
-            "value": "[parameters('keyVaultSecretName')]"
-          },
-          "contentType": {
-              "value": "[parameters('keyVaultContentType')]"
-          },
-          "value": {
-              "value": "[parameters('keyVaultSecretValue')]"
           }
         }
       }
@@ -728,7 +678,7 @@
       "name": "deployStorageAccount",
       "comments":"",
       "type": "Microsoft.Resources/deployments",
-      "resourceGroup": "[parameters('keyVaultResourceGroup')]",
+      "resourceGroup": "[parameters('resourceGroup')]",
       "apiVersion": "2017-05-10",
       "dependsOn": [],
       "properties": {
