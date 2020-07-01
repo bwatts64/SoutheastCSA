@@ -38,7 +38,7 @@
     "resources": [
         {
             "type": "Microsoft.Network/applicationGateways/providers/diagnosticSettings",
-            "name": "[concat(parameters('appgwName'),'/microsoft.insights/loganlytics')]",
+            "name": "[concat(parameters('appgwName'),'/microsoft.insights/loganalytics')]",
             "dependsOn": [],
             "apiVersion": "2017-05-01-preview",
             "properties": {

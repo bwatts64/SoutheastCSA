@@ -342,9 +342,7 @@
           "subnetName": {
             "value": "AppGW-SN"
           },
-          "subnetAddressPrefix": {
-            "value": "[reference(concat(subscription().id,'/resourceGroups/', parameters('resourceGroup') , '/providers/Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/AppGW-SN'), '2018-03-01').addressPrefix]"
-          },
+          "vnetName": {},
           "nsgName": {
             "value": "AppGW-NSG"
           },
@@ -365,7 +363,6 @@
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('resourceGroup')]",
       "dependsOn": [
-        "deployVNET",
         "deployAppGWNSG"
       ],
       "properties": {
@@ -402,7 +399,6 @@
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('resourceGroup')]",
       "dependsOn": [
-        "deployVNET",
         "deploySharedNSG"
       ],
       "properties": {
@@ -452,7 +448,6 @@
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('resourceGroup')]",
       "dependsOn": [
-        "deployVNET",
         "deployAPIMNSG"
       ],
       "properties": {
@@ -556,7 +551,7 @@
           }
         }
       }
-    }, 
+    },
     {
       "name": "deployAppGW",
       "type": "Microsoft.Resources/deployments",
