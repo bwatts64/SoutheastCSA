@@ -20,6 +20,7 @@ The Nested Templates are built to be generic in nature with the ability to pass 
      - [Private Endpoint](#PrivateEndpoint) 
      - [Private DNS Zone](#PrivateDNSZone)
      - [Private DNS A Record](#PrivateDNSARecord)
+     - [Get Subnet Address Space](#GetSubnetAddressSpace)
 * [IaaS Templates](#IaaSTemplates)
      - [Ubuntu Virtual Machine](#UbuntuVirtualMachine)
      - [Enable VM Insights](#EnabledVMInsights) 
@@ -834,6 +835,54 @@ saConnectionString: Connection string for the storage account
           },
           "recordValue": {
             "value": "[reference('getSqlServerNICIP').outputs.nicIP.value]"
+          }
+        }
+      }
+    }
+
+## <a name="GetSubnetAddressSpace"></a>Get Subnet Address Space Template  
+This template will return the address prefix for an existing subnet. This is typically used to pass the value into the NSG templates    
+
+### Typical Neted Template used before
+VNet        
+
+### Typical Nested Template used after  
+NSG-Empty-ExistingSubnet  
+NSG-ExistingSubnet             
+
+### Utilizing Template  
+This template requires you to pass in the following parameters:  
+
+| Parameter       | Description     | Example     |
+| :------------- | :----------: | -----------: |
+|  vnetName | Virtual Network Name  | poc-vnet    |  
+|  subnetName | Subnet Name  | poc-sn    |
+
+### Output  
+"addressPrefix": Address prefix for the subnet
+
+### Sample Deployment  
+
+    {
+      "name": "getAppGWAddressPrefix",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "resourceGroup": "[parameters('resourceGroup')]",
+      "dependsOn": [
+        "deployVNET"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('getSubnetAddressPrefixTemplateURL')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('vnetName')]"
+          },
+          "subnetName": {
+            "value": "AppGW-SN"
           }
         }
       }

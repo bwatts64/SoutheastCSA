@@ -266,6 +266,7 @@
     "deployLogAnalyticsTemplateURL": "[concat(variables('gitUri'),'/Log_Analytics_Workspace.json')]",
     "deployAppGWDiagnosticsTemplateURL": "[concat(variables('gitUri'),'/AppGWDiagnostics.json')]",
     "deployKeyVaultTemplateURL": "[concat(variables('gitUri'),'/KeyVault.json')]",
+    "getSubnetAddressPrefixTemplateURL": "[concat(variables('gitUri'),'/GetSubnetAddressPrefix.json')]",
     "saName": "[concat(toLower(parameters('deploymentPrefix')),'sa',toLower(uniqueString(parameters('resourceGroup'))))]",
     "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
     "vnetName": "[concat(parameters('deploymentPrefix'),'vnet',uniqueString(parameters('resourceGroup')))]",
