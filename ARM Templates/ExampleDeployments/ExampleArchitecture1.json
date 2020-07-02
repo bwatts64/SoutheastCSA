@@ -299,9 +299,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('resourceGroup')]",
-      "dependsOn": [
-        
-      ],
+      "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -322,12 +320,36 @@
       }
     },
     {
-      "name": "deployAppGWNSG",
+      "name": "getAppGWAddressPrefix",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('resourceGroup')]",
       "dependsOn": [
         "deployVNET"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('getSubnetAddressPrefixTemplateURL')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('vnetName')]"
+          },
+          "subnetName": {
+            "value": "AppGW-SN"
+          }
+        }
+      }
+    },
+    {
+      "name": "deployAppGWNSG",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "resourceGroup": "[parameters('resourceGroup')]",
+      "dependsOn": [
+        "getAppGWAddressPrefix"
       ],
       "properties": {
         "mode": "Incremental",
@@ -341,6 +363,9 @@
           },
           "subnetName": {
             "value": "AppGW-SN"
+          },
+          "addressPrefix": {
+            "value": "[reference('getAppGWAddressPrefix').outputs.addressPrefix.value]"
           },
           "nsgName": {
             "value": "AppGW-NSG"
@@ -357,12 +382,36 @@
       }
     },
     {
-      "name": "deploySharedNSG",
+      "name": "getSharedAddressPrefix",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('resourceGroup')]",
       "dependsOn": [
         "deployAppGWNSG"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('getSubnetAddressPrefixTemplateURL')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('vnetName')]"
+          },
+          "subnetName": {
+            "value": "Shared-SN"
+          }
+        }
+      }
+    },
+    {
+      "name": "deploySharedNSG",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "resourceGroup": "[parameters('resourceGroup')]",
+      "dependsOn": [
+        "getSharedAddressPrefix"
       ],
       "properties": {
         "mode": "Incremental",
@@ -377,6 +426,9 @@
           "subnetName": {
             "value": "Shared-SN"
           },
+          "addressPrefix": {
+            "value": "[reference('getSharedAddressPrefix').outputs.addressPrefix.value]"
+          },
           "nsgName": {
             "value": "Shared-NSG"
           },
@@ -390,12 +442,36 @@
       }
     },
     {
-      "name": "deployAPIMNSG",
+      "name": "getAPIMAddressPrefix",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('resourceGroup')]",
       "dependsOn": [
         "deploySharedNSG"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('getSubnetAddressPrefixTemplateURL')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('vnetName')]"
+          },
+          "subnetName": {
+            "value": "APIM-SN"
+          }
+        }
+      }
+    },
+    {
+      "name": "deployAPIMNSG",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "resourceGroup": "[parameters('resourceGroup')]",
+      "dependsOn": [
+        "getAPIMAddressPrefix"
       ],
       "properties": {
         "mode": "Incremental",
@@ -409,6 +485,9 @@
           },
           "subnetName": {
             "value": "APIM-SN"
+          },
+          "addressPrefix": {
+            "value": "[reference('getAPIMAddressPrefix').outputs.addressPrefix.value]"
           },
           "nsgName": {
             "value": "APIM-NSG"
@@ -436,12 +515,36 @@
       }
     },
     {
-      "name": "deployAKSNSG",
+      "name": "getAKSAddressPrefix",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('resourceGroup')]",
       "dependsOn": [
         "deployAPIMNSG"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('getSubnetAddressPrefixTemplateURL')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('vnetName')]"
+          },
+          "subnetName": {
+            "value": "AKS-SN"
+          }
+        }
+      }
+    },
+    {
+      "name": "deployAKSNSG",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "resourceGroup": "[parameters('resourceGroup')]",
+      "dependsOn": [
+        "getAKSAddressPrefix"
       ],
       "properties": {
         "mode": "Incremental",
@@ -455,6 +558,9 @@
           },
           "subnetName": {
             "value": "AKS-SN"
+          },
+          "addressPrefix": {
+            "value": "[reference('getAKSAddressPrefix').outputs.addressPrefix.value]"
           },
           "nsgName": {
             "value": "AKS-NSG"
