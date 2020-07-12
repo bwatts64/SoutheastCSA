@@ -129,8 +129,10 @@
       "deployLATemplateURL": "[concat(variables('gitUri'),'/Log_Analytics_Workspace.json')]",
       "deployAPIMTemplateURL": "[concat(variables('gitUri'),'/APIM.json')]",
       "deployAzureAKSTemplateURL": "[concat(variables('gitUri'),'/AKSMICluster.json')]",
+      "deployAppInsightsURL": "[concat(variables('gitUri'),'/ApplicationInsights.json')]",
       "saName": "[concat(toLower(parameters('deploymentPrefix')),'sa',toLower(uniqueString(parameters('resourceGroup'))))]",
       "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
+      "appInsightsName": "[concat(parameters('deploymentPrefix'),'ai',uniqueString(parameters('resourceGroup')))]",
       "vnetName": "[concat(parameters('deploymentPrefix'),'vnet',uniqueString(parameters('resourceGroup')))]",
       "applicationGatewayName": "[concat(parameters('deploymentPrefix'),'appgw',uniqueString(parameters('resourceGroup')))]",
       "keyVaultName": "labVaultwb",
@@ -159,6 +161,25 @@
           "parameters": {
             "workspaceName": {
               "value": "[variables('laName')]"
+            }
+          }
+        }
+      },
+      {
+        "name": "deployAppInsights",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployAppInsightsURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "name": {
+              "value": "[variables('appInsightsName')]"
             }
           }
         }
@@ -698,6 +719,7 @@
         "comments":"",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
             "deployVNET"
         ],
@@ -728,6 +750,18 @@
                 },
                 "virtualNetworkType": {
                     "value": "[parameters('apimVirtualNetworkType')]"
+                },
+                "disableGateway": {
+                  "value": false
+                },
+                "loggerName":{
+                  "value": "[variables('appInsightsName')]"
+                },
+                "workspaceID": {
+                  "value": "[reference('deployLAWorkspace').outputs.workspaceId.value]"
+                },
+                "appinsightsID": {
+                  "value": "[reference('deployAppInsights').outputs.appInsightsID.value]"
                 }
             }
         }
@@ -737,6 +771,7 @@
         "comments":"apiVersion is flagged, but haven't changed as not sure if this is needed for some features.",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2019-10-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "deployVNET"
         ],
@@ -771,12 +806,6 @@
             "enableRBAC": {
                 "value": "[parameters('enableRBAC')]"
             },
-            "vmssNodePool": {
-                "value": "[parameters('vmssNodePool')]"
-            },
-            "windowsProfile": {
-                "value": "[parameters('windowsProfile')]"
-            },
             "enablePrivateCluster": {
                 "value": "[parameters('enablePrivateCluster')]"
             },
@@ -797,9 +826,6 @@
             },
             "dockerBridgeCidr": {
                 "value": "[variables('dockerBridgeCidr')]"
-            },
-            "resourceTag":{
-              "value":"[variables('resourceTag')]"
             },
             "enableNodePublicIP": {
               "value": false
