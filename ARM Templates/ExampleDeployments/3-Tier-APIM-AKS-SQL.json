@@ -20,12 +20,12 @@
       "subnets": {
         "type": "array",
         "defaultValue": [
-          "APIM-SN|192.168.1.224/28",
-          "AKS-SN|192.168.1.0/25",
-          "Data-SN|192.168.1.176/28",
-          "Shared-SN|192.168.1.160/28",
-          "AzureBastionSubnet|192.168.1.128/28",
-          "AppGW-SN|192.168.1.144/28"
+          "APIM-SN|192.168.1.224/28|Enabled",
+          "AKS-SN|192.168.1.0/25|Enabled",
+          "Data-SN|192.168.1.176/28|Disabled",
+          "Shared-SN|192.168.1.160/28|Enabled",
+          "AzureBastionSubnet|192.168.1.128/28|Enabled",
+          "AppGW-SN|192.168.1.144/28|Enabled"
         ]
       },
       "appgwtier": {
@@ -830,7 +830,7 @@
         "name": "deployACRDNSZone",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2017-05-10",
+        "apiVersion": "2018-05-01",
         "dependsOn": [
           "deployVNET"
         ],
@@ -854,7 +854,7 @@
         "name": "getACRNICIP",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2017-05-10",
+        "apiVersion": "2018-05-01",
         "dependsOn": [
           "deployACRPrivateEndpoint"
         ],
@@ -875,7 +875,7 @@
         "name": "deployACRDNSARecord",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2017-05-10",
+        "apiVersion": "2018-05-01",
         "dependsOn": [
           "getACRNICIP"
         ],
