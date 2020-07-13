@@ -129,13 +129,19 @@
       "deployLATemplateURL": "[concat(variables('gitUri'),'/Log_Analytics_Workspace.json')]",
       "deployAPIMTemplateURL": "[concat(variables('gitUri'),'/APIM.json')]",
       "deployAzureAKSTemplateURL": "[concat(variables('gitUri'),'/AKSMICluster.json')]",
+      "deployACRTemplateURL": "[concat(variables('gitUri'),'/ACR.json')]",
       "deployAppInsightsURL": "[concat(variables('gitUri'),'/ApplicationInsights.json')]",
+      "deployPrivateEndpointTemplateURL": "[concat(variables('gitUri'),'/PrivateEndpoint.json')]",
+      "deployDNSZoneTemplateURL": "[concat(variables('gitUri'),'/PrivateDNSZone.json')]",
+      "getNICIPURL": "[concat(variables('gitUri'),'/GetNicIP.json')]",
+      "deployDNSARecordTemplateURL": "[concat(variables('gitUri'),'/PrivateDNSARecord.json')]",
       "saName": "[concat(toLower(parameters('deploymentPrefix')),'sa',toLower(uniqueString(parameters('resourceGroup'))))]",
       "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
       "appInsightsName": "[concat(parameters('deploymentPrefix'),'ai',uniqueString(parameters('resourceGroup')))]",
       "vnetName": "[concat(parameters('deploymentPrefix'),'vnet',uniqueString(parameters('resourceGroup')))]",
       "applicationGatewayName": "[concat(parameters('deploymentPrefix'),'appgw',uniqueString(parameters('resourceGroup')))]",
       "keyVaultName": "labVaultwb",
+      "acrName": "[concat(parameters('deploymentPrefix'),'acr',uniqueString(parameters('resourceGroup')))]",
       "apimName": "[concat(parameters('deploymentPrefix'),'apim',uniqueString(parameters('resourceGroup')))]",
       "AksresourceName":"[concat(parameters('deploymentPrefix'),'-AKSResource')]",
       "nodeResourceGroup":"[concat(parameters('deploymentPrefix'),'-AKSRG',uniqueString(parameters('resourceGroup')))]",
@@ -331,14 +337,13 @@
                 "allow-event-hub|Allow-EventHub|Tcp|*|5671-5672|VirtualNetwork|EventHub|Allow|120|Outbound",
                 "allow-event-hub-443|Allow-EventHub|Tcp|*|443|VirtualNetwork|EventHub|Allow|130|Outbound",
                 "allow-file-share|Allow-FileShare|Tcp|*|445|VirtualNetwork|Storage|Allow|140|Outbound",
-                "allow-health-status|Allow-Health-Status|Tcp|*|1886|VirtualNetwork|AzureCloud|Allow|150|Outbound",
+                "allow-health-status|Allow-Health-Status|Tcp|*|443|VirtualNetwork|AzureCloud|Allow|150|Outbound",
                 "allow-azure-monitor|Allow-Azure-Monitor|Tcp|*|443|VirtualNetwork|AzureMonitor|Allow|160|Outbound",
                 "allow-azure-cache-ob|Allow-Azure-Cahce|Tcp|*|6381-6383|VirtualNetwork|VirtualNetwork|Allow|170|Outbound",
                 "allow-azure-cache-ib|Allow-Azure-Cahce|Tcp|*|6381-6383|VirtualNetwork|VirtualNetwork|Allow|130|Inbound",
                 "allow-rate-limit-ib|Allow-Rate-Limit-Policy|UDP|*|4290|VirtualNetwork|VirtualNetwork|Allow|140|Inbound",
                 "allow-rate-limit-ob|Allow-Rate-Limit-Policy|UDP|*|4290|VirtualNetwork|VirtualNetwork|Allow|180|Outbound",
-                "deny-all-inbound|Deny All|Tcp|*|*|*|*|Deny|500|Inbound",
-                "deny-all-outbound|Deny All|Tcp|*|*|*|*|Deny|500|Outbound"
+                "allow-loadbalancer-ib|Allow-Azure-Load-Balancer|Tcp|*|*|AzureLoadBalancer|VirtualNetwork|Allow|150|Inbound"
               ]
             }
           }
@@ -758,12 +763,139 @@
                   "value": "[variables('appInsightsName')]"
                 },
                 "workspaceID": {
-                  "value": "[reference('deployLAWorkspace').outputs.workspaceId.value]"
+                  "value": "[reference('deployLogAnalytics').outputs.workspaceId.value]"
                 },
                 "appinsightsID": {
                   "value": "[reference('deployAppInsights').outputs.appInsightsID.value]"
                 }
             }
+        }
+      },
+      {
+        "name": "deployACR",
+        "comments":"apiVersion is flagged, but haven't changed as not sure if this is needed for some features.",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2019-10-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deployVNET"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployACRTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "acrName": {
+              "value": "[variables('acrName')]"
+            }
+          }
+        }
+      },
+      {
+        "name": "deployACRPrivateEndpoint",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2019-10-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deployACR"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployPrivateEndpointTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "peName": {
+              "value": "[variables('acrName')]"
+            },
+            "resourceID": {
+              "value": "[reference('deployACR').outputs.acrId.value]"
+            },
+            "vnetID": {
+              "value": "[reference('deployVNET').outputs.vnetId.value]"
+            },
+            "subnetName": {
+              "value": "Data-SN"
+            },
+            "groupID": {
+              "value": "registry"
+            }
+          }
+        }
+      },
+      {
+        "name": "deployACRDNSZone",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2017-05-10",
+        "dependsOn": [
+          "deployVNET"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployDNSZoneTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "zone_name": {
+              "value": "privatelink.azure.io"
+            },
+            "vnet_id": {
+              "value": "[reference('deployVNET').outputs.vnetID.value]"
+            }
+          }
+        }
+      },
+      {
+        "name": "getACRNICIP",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2017-05-10",
+        "dependsOn": [
+          "deployACRPrivateEndpoint"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('getNICIPUrL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "nicID": {
+              "value": "[reference('deployACRPrivateEndpoint').outputs.nicID.value]"
+            }
+          }
+        }
+      },
+      {
+        "name": "deployACRDNSARecord",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2017-05-10",
+        "dependsOn": [
+          "getACRNICIP"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployDNSARecordTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "zone_name": {
+              "value": "privatelink.azure.io"
+            },
+            "recordname": {
+              "value": "[variables('acrName')]"
+            },
+            "recordValue": {
+              "value": "[reference('getACRNICIP').outputs.nicIP.value]"
+            }
+          }
         }
       },
       {

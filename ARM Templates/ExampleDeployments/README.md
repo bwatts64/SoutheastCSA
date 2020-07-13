@@ -355,7 +355,7 @@ Now that we have a Log Analytics Workspace we can use the Nested Template "AppGW
             }  
 
 ### Azure API Management Deployment  
-Next we need to deploy the APIM solution in "Internal" only mode. This means that the APIM instance will not have a public access point and only be private on our APIM-SN. The only way to access the instance is from either the Application Gateway or our Jump Box.  
+Next we need to deploy the APIM solution in "Internal" only mode. This means that the APIM instance will not have a public access point and only be private on our APIM-SN. The only way to access the instance is from either the Application Gateway or our Jump Box.  The APIM deployment also enbales both Applicaiton Insights and Log Analytics monitoring. So before deploying APIM you need to deploy both of these resources.
 
 To deploy APIM you call the APIM template using the following:  
 
@@ -379,9 +379,132 @@ To deploy APIM you call the APIM template using the following:
                 },
                 "virtualNetworkType": {
                     "value": "[parameters('apimVirtualNetworkType')]"
-                }  
+                },
+                "disableGateway": {
+                  "value": false
+                },
+                "loggerName":{
+                  "value": "[variables('appInsightsName')]"
+                },
+                "workspaceID": {
+                  "value": "[reference('deployLogAnalytics').outputs.workspaceId.value]"
+                },
+                "appinsightsID": {
+                  "value": "[reference('deployAppInsights').outputs.appInsightsID.value]"
+                }    
 
 Because we are deploying APIM in Internal mode you have to pass in the value 'Internal' for   the "virtualNetworkType" parameter.  
 
 ### AKS Deployment  
-Next we will deploy our middle tier which runs AKS. The AKS cluster will be deployed privatley with no public endpoints. 
+Next we will deploy our middle tier which runs AKS. The AKS cluster will be deployed privatley using Private Endpoints.  
+
+You can deploy AKS using the following parameters:  
+
+            "AksresourceName": {
+              "value": "[variables('AksresourceName')]"
+            },
+            "nodeResourceGroup":{
+              "value": "[variables('nodeResourceGroup')]"
+            },
+            "VNetName" : {
+              "value": "[variables('vNETName')]"
+            },
+            "SubnetName" : {
+              "value": "AKS-SN"
+            },  
+            "dnsPrefix": {
+                "value": "[variables('dnsPrefix')]"
+            },
+            "kubernetesVersion": {
+                "value": "[parameters('kubernetesVersion')]"
+            },
+            "networkPlugin": {
+                "value": "[parameters('networkPlugin')]"
+            },
+            "enableRBAC": {
+                "value": "[parameters('enableRBAC')]"
+            },
+            "enablePrivateCluster": {
+                "value": "[parameters('enablePrivateCluster')]"
+            },
+            "enableHttpApplicationRouting": {
+                "value": "[parameters('enableHttpApplicationRouting')]"
+            },
+            "networkPolicy": {
+                "value": "[parameters('networkPolicy')]"
+            },
+            "vnetSubnetID": {
+                "value": "[concat(reference('deployVNET').outputs.vnetId.value,'/subnets/AKS-SN')]"
+            },
+            "serviceCidr": {
+                "value": "[variables('serviceCidr')]"
+            },
+            "dnsServiceIP": {
+                "value": "[variables('dnsServiceIP')]"
+            },
+            "dockerBridgeCidr": {
+                "value": "[variables('dockerBridgeCidr')]"
+            },
+            "enableNodePublicIP": {
+              "value": false
+            }
+
+### Azure Container Registry with Private Endpoint  
+We want to provide a private Container Registry for our AKS cluster. For this we will utilize Azure Container Registry with a Private Endpoint. To deploy this through the template we'll utilize a three step process:  
+
+1) Create the Azure Container Registry using the ACR template  
+
+            "acrName": {
+              "value": "[variables('acrName')]"
+            }
+
+2) Now that the ACR is created we can create the Private Endpoint for it using the PrivateEndpoint template  
+
+            "peName": {
+              "value": "[variables('acrName')]"
+            },
+            "resourceID": {
+              "value": "[reference('deployACR').outputs.acrId.value]"Priv
+            },
+            "vnetID": {
+              "value": "[reference('deployVNET').outputs.vnetId.value]"
+            },
+            "subnetName": {
+              "value": "Data-SN"
+            },
+            "groupID": {
+              "value": "registry"
+            }  
+
+3) Next we need to create the DNS record so we resolve to the private IP Address. We will utilize two templates for this. The PrivateDNSZone template will create the Zone and attach it to the VNet and the PrivateDNSARecord will add the A record for the newly created Private Endpoint.  
+
+We can create the DNS Zone calling PrivateDNSZone and prividing the following:  
+
+            "zone_name": {
+              "value": "privatelink.azure.io"
+            },
+            "vnet_id": {
+              "value": "[reference('deployVNET').outputs.vnetID.value]"
+            }
+          }  
+
+To add the A record from our Private Endpoint we need to first get the IP Address of the virtual nic created by the Private Endpoint using "GetNicIP" template and then call the PrivateDNSARecord template with this value.  
+
+First the GetNicIP we call with the following:  
+
+          "nicID": {
+            "value": "[reference('deployACRPE').outputs.nicID.value]"
+          }  
+
+Now we can execute the PrivateDNSARecord template with the following: 
+
+           "zone_name": {
+              "value": "privatelink.azure.io"
+            },
+            "recordname": {
+              "value": "[variables('acrName')]"
+            },
+            "recordValue": {
+              "value": "[reference('getACRNICIP').outputs.nicIP.value]"
+            }
+

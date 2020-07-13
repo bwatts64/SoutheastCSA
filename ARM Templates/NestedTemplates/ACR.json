@@ -22,7 +22,8 @@
                 "name": "Premium"
             },
             "properties": {
-                "publicNetworkAccess": "Disabled"
+                "publicNetworkAccess": "Enabled",
+                "adminUserEnabled": "Enabled"
             }
         }
     ],
@@ -30,6 +31,10 @@
         "acrId": {
             "type": "string",
             "value": "[resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName'))]"
+        },
+        "acrLoginServer": {
+            "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries',parameters('acrName')),'2019-05-01').loginServer]",
+            "type": "string"
         }
     }
 }
