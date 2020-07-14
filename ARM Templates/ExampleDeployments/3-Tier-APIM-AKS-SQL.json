@@ -132,6 +132,7 @@
       "deployAppGWHTTPSListenerKVTemplateURL": "[concat(variables('gitUri'),'/AppGWHTTPSListenerKV.json')]",
       "createManagedIdentityTemplateURL": "[concat(variables('gitUri'),'/UserAssignedManagedIdentity.json')]",
       "deployAppGWDiagnosticsTemplateURL": "[concat(variables('gitUri'),'/AppGWDiagnostics.json')]",
+      "deploySQLDBDiagnosticsTemplateURL": "[concat(variables('gitUri'),'/SQLDBDiagnostics.json')]",
       "getSubnetAddressPrefixTemplateURL": "[concat(variables('gitUri'),'/GetSubnetAddressPrefix.json')]",
       "deployKeyVaultAccessTemplate": "[concat(variables('gitUri'),'/KeyVaultAccessPolicy.json')]",
       "deployLATemplateURL": "[concat(variables('gitUri'),'/Log_Analytics_Workspace.json')]",
@@ -153,7 +154,6 @@
       "apimName": "[concat(parameters('deploymentPrefix'),'apim',uniqueString(parameters('resourceGroup')))]",
       "AksresourceName":"[concat(parameters('deploymentPrefix'),'-AKSResource')]",
       "nodeResourceGroup":"[concat(parameters('deploymentPrefix'),'-AKSRG',uniqueString(parameters('resourceGroup')))]",
-      "resourceTag":"MSFT_POC",
       "dnsPrefix":"[concat(variables('AksresourceName'),'-dns')]",
       "serviceCidr":"10.0.0.0/24",
       "dnsServiceIP":"10.0.0.10",
@@ -985,10 +985,9 @@
         "name": "deploySqlDb",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2017-05-10",
-        "dependsOn": [
-          "deployLAWorkspace"
-        ],
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [],
         "properties": {
           "mode": "Incremental",
           "templateLink": {
@@ -1035,12 +1034,6 @@
             "autoPauseDelay": {
                 "value": "180"
             },
-            "enableADS": {
-                "value": false
-            },
-            "enableVA": {
-                "value": false
-            },
             "useVAManagedIdentity": {
                 "value": true
             },
@@ -1050,17 +1043,62 @@
             "administratorLoginPassword": {
                 "value": "[parameters('adminPassword')]"
             },
-            "resourceTag":{
-              "value":"[variables('resourceTag')]"
+            "publicNetworkAccess": {
+              "value": "Disabled"
             }
           }
         }
       },
       {
+        "name": "deploySQLDBDiagnostics",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deploySqlDb",
+          "deployLogAnalytics"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deploySQLDBDiagnosticsTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "workspaceId": {
+                "value": "[reference('deployLogAnalytics').outputs.workspaceId.value]"
+            },
+            "logs": {
+                "value": [
+                  "AutomaticTuning",
+                  "QueryStoreRuntimeStatistics",
+                  "QueryStoreWaitStatistics",
+                  "Errors",
+                  "DatabaseWaitStatistics",
+                  "Timeouts",
+                  "Blocks",
+                  "Deadlocks"
+                ]
+            },
+            "metrics": {
+                "value": [
+                  "Basic",
+                  "InstanceAndAppAdvanced",
+                  "WorkloadManagement"
+                ]
+            },
+            "sqldbName": {
+              "value": "[variables('sqlDatabaseName')]"
+            }
+          }
+        }  
+      },
+      {
         "name": "deploySqlServerPE",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2017-05-10",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "deploySqlDb",
           "deployVNET"
@@ -1081,11 +1119,11 @@
             "vnetID": {
               "value": "[reference('deployVNET').outputs.vnetId.value]"
             },
+            "subnetName": {
+              "value": "Data-SN"
+            },
             "groupID": {
               "value": "SqlServer"
-            },
-            "resourceTag":{
-              "value":"[variables('resourceTag')]"
             }
           }
         }
@@ -1094,7 +1132,8 @@
         "name": "deploySqlDbDNSZone",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2017-05-10",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "deployVNET"
         ],
@@ -1105,10 +1144,10 @@
             "contentVersion": "1.0.0.0"
           },
           "parameters": {
-            "zone_name": {
+            "zoneName": {
               "value": "privatelink.database.windows.net"
             },
-            "vnet_id": {
+            "vnetID": {
               "value": "[reference('deployVNET').outputs.vnetID.value]"
             }
           }
@@ -1118,7 +1157,8 @@
         "name": "getSqlServerNICIP",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2017-05-10",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "deploySqlServerPE"
         ],
