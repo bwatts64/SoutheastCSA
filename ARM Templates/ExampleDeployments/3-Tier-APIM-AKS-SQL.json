@@ -459,6 +459,9 @@
                 "deny-all-ib|Deny-All-Traffic|Tcp|*|*|*|*|Deny|500|Inbound",
                 "deny-all-ob|Deny-All-Traffic|Tcp|*|*|*|*|Deny|500|Outbound"
               ]
+            },
+            "privateEndpointNetworkPolicies": {
+              "value": "Disabled"
             }
           }
         }
@@ -831,6 +834,7 @@
         "comments":"",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "deployVNET"
         ],
@@ -841,10 +845,10 @@
             "contentVersion": "1.0.0.0"
           },
           "parameters": {
-            "zone_name": {
+            "zoneName": {
               "value": "privatelink.azure.io"
             },
-            "vnet_id": {
+            "vnetID": {
               "value": "[reference('deployVNET').outputs.vnetID.value]"
             }
           }
@@ -855,6 +859,7 @@
         "comments":"",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "deployACRPrivateEndpoint"
         ],
@@ -876,6 +881,7 @@
         "comments":"",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "getACRNICIP"
         ],
@@ -886,10 +892,10 @@
             "contentVersion": "1.0.0.0"
           },
           "parameters": {
-            "zone_name": {
+            "zoneName": {
               "value": "privatelink.azure.io"
             },
-            "recordname": {
+            "recordName": {
               "value": "[variables('acrName')]"
             },
             "recordValue": {

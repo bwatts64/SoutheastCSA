@@ -19,6 +19,14 @@
       },
       "nsgName": {
           "type": "string"
+      },
+      "privateEndpointNetworkPolicies": {
+        "type": "string",
+        "allowedValues": [
+          "Enabled",
+          "Disabled"
+        ],
+        "defaultValue": "Enabled"
       }
     },
     "variables": {
@@ -43,8 +51,9 @@
             "location": "[resourceGroup().location]",
             "properties": {
                 "addressPrefix": "[parameters('addressPrefix')]",
+                "privateEndpointNetworkPolicies": "[parameters('privateEndpointNetworkPolicies')]",
                 "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
                 }
             }
     }
