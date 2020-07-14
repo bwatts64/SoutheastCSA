@@ -116,12 +116,12 @@ First we deploy the Virtual Network with the subnets defines. The following Para
       "subnets": {
         "type": "array",
         "defaultValue": [
-          "apim-SN|192.168.1.224/28",
-          "aks-SN|192.168.1.0/25",
-          "data-SN|192.168.1.176/28",
-          "shared-SN|192.168.1.160/28",
-          "AzureBastionSubnet|192.168.1.128/28",
-          "AppGW-SN|192.168.1.144/28"
+          "apim-SN|192.168.1.224/28|Enabled",
+          "aks-SN|192.168.1.0/25|Enabled",
+          "data-SN|192.168.1.176/28|Disabled",
+          "shared-SN|192.168.1.160/28|Enabled",
+          "AzureBastionSubnet|192.168.1.128/28|Enabled",
+          "AppGW-SN|192.168.1.144/28|Enabled"
         ]
       }
 
@@ -506,5 +506,112 @@ Now we can execute the PrivateDNSARecord template with the following:
             },
             "recordValue": {
               "value": "[reference('getACRNICIP').outputs.nicIP.value]"
+            }
+
+### Azure SQL with Private Endpoint  
+We'll go through a simular process to create an Azure SQL Database with a Private Endpoint. To deploy this through the template we'll utilize a three step process:  
+
+1) Create the Azure SQL Database using the SQLDB template  
+
+            "collation": {
+              "value": "SQL_Latin1_General_CP1_CI_AS"
+            },
+            "databaseName": {
+                "value": "[variables('sqlDatabaseName')]"
+            },
+            "tier": {
+                "value": "GeneralPurpose"
+            },
+            "skuName": {
+                "value": "GP_S_Gen5_24"
+            },
+            "maxSizeBytes": {
+                "value": 1099511627776
+            },
+            "sampleName": {
+                "value": ""
+            },
+            "serverName": {
+                "value": "[variables('sqlServerName')]"
+            },
+            "zoneRedundant": {
+                "value": false
+            },
+            "licenseType": {
+                "value": ""
+            },
+            "readScaleOut": {
+                "value": "Disabled"
+            },
+            "numberOfReplicas": {
+                "value": 0
+            },
+            "minCapacity": {
+                "value": "3"
+            },
+            "autoPauseDelay": {
+                "value": "180"
+            },
+            "enableADS": {
+                "value": false
+            },
+            "enableVA": {
+                "value": false
+            },
+            "useVAManagedIdentity": {
+                "value": true
+            },
+            "administratorLogin": {
+              "value": "[parameters('adminUsername')]"
+            },
+            "administratorLoginPassword": {
+                "value": "[parameters('adminPassword')]"
+            }
+
+2) Now that the Azure SQL Database is created we can create the Private Endpoint for it using the PrivateEndpoint template  
+
+          "peName": {
+            "value": "[concat(variables('sqlServerName'),'_pe')]"
+          },
+          "resourceID": {
+            "value": "[reference('deploySqlDb').outputs.sqlServerId.value]"
+          },
+          "vnetID": {
+            "value": "[reference('deployVNET').outputs.vnetId.value]"
+          },
+          "groupID": {
+            "value": "SqlServer"
+          }  
+
+3) Next we need to create the DNS record so we resolve to the private IP Address. We will utilize two templates for this. The PrivateDNSZone template will create the Zone and attach it to the VNet and the PrivateDNSARecord will add the A record for the newly created Private Endpoint.  
+
+We can create the DNS Zone calling PrivateDNSZone and prividing the following:  
+
+            "zone_name": {
+              "value": "privatelink.database.windows.net"
+            },
+            "vnet_id": {
+              "value": "[reference('deployVNET').outputs.vnetID.value]"
+            }
+            
+
+To add the A record from our Private Endpoint we need to first get the IP Address of the virtual nic created by the Private Endpoint using "GetNicIP" template and then call the PrivateDNSARecord template with this value.  
+
+First the GetNicIP we call with the following:  
+
+          "nicID": {
+              "value": "[reference('deploySqlServerPE').outputs.nicID.value]"
+            } 
+
+Now we can execute the PrivateDNSARecord template with the following: 
+
+           "zone_name": {
+              "value": "privatelink.database.windows.net"
+            },
+            "recordname": {
+              "value": "[variables('sqlServerName')]"
+            },
+            "recordValue": {
+              "value": "[reference('getSqlServerNICIP').outputs.nicIP.value]"
             }
 
