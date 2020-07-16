@@ -8,9 +8,6 @@
         "logs": {
             "type": "array"
         },
-        "metrics": {
-            "type": "array"
-        },
         "bastionName": {
             "type": "string"
         }
@@ -22,14 +19,6 @@
                 "count": "[length(parameters('logs'))]",
                 "input": {
                     "category": "[parameters('logs')[copyIndex('logs')]]",
-                    "enabled": true
-                }
-            },
-            {
-                "name": "metrics",
-                "count": "[length(parameters('metrics'))]",
-                "input": {
-                    "category": "[parameters('metrics')[copyIndex('metrics')]]",
                     "enabled": true
                 }
             }
@@ -44,8 +33,7 @@
             "properties": {
                 "name": "loganalytics",
                 "workspaceId": "[parameters('workspaceId')]",
-                "logs": "[variables('logs')]",
-                "metrics": "[variables('metrics')]"
+                "logs": "[variables('logs')]"
             }
         }        
     ],

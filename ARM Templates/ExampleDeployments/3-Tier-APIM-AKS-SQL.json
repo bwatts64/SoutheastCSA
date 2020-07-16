@@ -1317,7 +1317,7 @@
                 "value": "[concat(reference('deployVNET').outputs.vnetId.value,'/subnets/AzureBastionSubnet')]"
             },
             "publicIpId": {
-                "value": "[reference('deployAzureBastionPIP').outputs.publicIPID.value)]"
+                "value": "[reference('deployAzureBastionPIP').outputs.publicIPID.value]"
             }
           }
         }
@@ -1345,9 +1345,6 @@
                 "value": [
                   "BastionAuditLogs"
                 ]
-            },
-            "metrics": {
-                "value": []
             },
             "bastionName": {
               "value": "[variables('bastionHostName')]"
