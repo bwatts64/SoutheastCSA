@@ -615,3 +615,44 @@ Now we can execute the PrivateDNSARecord template with the following:
               "value": "[reference('getSqlServerNICIP').outputs.nicIP.value]"
             }
 
+### Admin Jump Host   
+In this deployment we don't have VPN access so we'll need a server in the VNet so we can do administrative work. We don't want to expose it directly to the internet so we will not create a pubic IP address. Instead we'll access it though a Bastion Host we create in the next step.  
+
+We can deploy a Windows Server utilizing the "WindowsVirtualMachine" template and providing the following parameters:
+
+            "subnetID": {
+              "value": "[concat(reference('deployVNET').outputs.vnetId.value,'/subnets/Shared-SN')]"
+            },
+            "virtualMachineName": {
+              "value": "[variables('jumpName')]"
+            },
+            "virtualMachineSize": {
+              "value": "[variables('jumpSize')]"
+            },
+            "adminUsername": {
+              "value": "[parameters('adminUserName')]"
+            },
+            "adminPassword": {
+              "value": "[parameters('adminPassword')]"
+            },
+            "sku": {
+              "value": "[variables('jumpSKU')]"
+            }
+          }  
+
+Once the VM is deployed we want to enable VM Insights on the virtual machine using the "EnableVMInsights" template  
+
+            "VmResourceId": {
+              "value": "[reference('deployJumpBox').outputs.vmID.value]"
+            },
+            "osType": {
+              "value": "Windows"
+            },
+            "WorkspaceResourceId": {
+              "value": "[reference('deployLogAnalytics').outputs.workspaceId.value]"
+            }
+
+### Azure Bastion Host   
+In order to access our Jump Box with no VPN or Public IP Address we will utilize the Azure Bastion service.  
+
+We can deploy an Azure Bastion Host utilizing the "AzureBastion" template and providing the following parameters:
