@@ -117,6 +117,7 @@
     },
     "variables": {
       "gitUri": "https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/NestedTemplates",
+      "dscUri": "https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/dsc",
       "deployVNETTemplateURL": "[concat(variables('gitUri'),'/VNet.json')]",
       "deployNSGTemplateURL": "[concat(variables('gitUri'),'/NSG-ExistingSubnet.json')]",
       "deployNSGEmptyTemplateURL": "[concat(variables('gitUri'),'/NSG-Empty-ExistingSubnet.json')]",
@@ -161,7 +162,7 @@
       "jumpSKU": "2019-Datacenter",
       "jumpSize": "Standard_DS1_v2",
       "bastionHostName": "[concat(parameters('deploymentPrefix'),'-bastion',uniqueString(parameters('resourceGroup')))]",
-      "jumpConfigModuleURL": "[concat(variables('gitUri'),'/PrepareJumpBox.zip')]",
+      "jumpConfigModuleURL": "[concat(variables('dscUri'),'/PrepareJumpBox.zip')]",
       "jumpConfigFunction": "PrepareJumpBox.ps1\\configJumpBox"
     },
     "resources": [
