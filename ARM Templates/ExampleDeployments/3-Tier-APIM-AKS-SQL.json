@@ -505,6 +505,30 @@
         }
       },
       {
+        "name": "getBastionAddressPrefix",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deployAppGWNSG"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('getSubnetAddressPrefixTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "vnetName": {
+              "value": "[variables('vnetName')]"
+            },
+            "subnetName": {
+              "value": "AzureBastionSubnet"
+            }
+          }
+        }
+      },
+      {
         "name": "deploySharedNSG",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
@@ -534,7 +558,7 @@
             "securityRules": {
               "value": [
                 "deny-all|Deny-All-Traffic|Tcp|*|*|*|*|Deny|500|Inbound",
-                "allow-bastion|Allow-Bastion-Host|Tcp|*|*|192.168.1.144/28|*|Allow|100|Inbound"
+                "[concat('allow-bastion|Allow-Bastion-Host|Tcp|*|*|',reference('getBastionAddressPrefix').outputs.addressPrefix.value,'|*|Allow|100|Inbound')]"
               ]
             }
           }
