@@ -24,7 +24,7 @@ configuration configJumpBox
                 }
 
                 try {
-                    Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DSC\ModulesInstalled -ErrorAction SilentlyContinue
+                    $modulesInstalled = Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DSC\ModulesInstalled -ErrorAction SilentlyContinue
                 }
                 catch {
                     $modulesInstalled = 'False'
