@@ -35,7 +35,7 @@ configuration configJumpBox
                     Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
                     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
                     choco install kubernetes-helm --version 3.2.4 -y 
-                    Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.201 -ForceInstall-PackageProvider -Name NuGet -RequiredVersion 2.8.5.201 -Force
+                    Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.201 -Force
                     Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
                     Install-Package -Name docker -ProviderName DockerMsftProvider -Force
                     Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\DSC -Name ModuledInstalled -Value "True"
