@@ -1321,9 +1321,6 @@
             },
             "principalId": {
               "value": "[reference('deployJumpBox').outputs.principalID.value]"
-            },
-            "scope": {
-              "value": "[resourceGroup().id]"
             }
           }
         }
