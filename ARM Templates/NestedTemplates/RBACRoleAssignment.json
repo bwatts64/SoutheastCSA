@@ -11,18 +11,19 @@
         "principalId": {
             "type": "string"
         },
-        "resourceType": {
+        "scope": {
             "type": "string"
         }
     },
     "resources": [
         {
             "name": "[parameters('roleAssignmentName')]",
-            "type": "[concat(parameters('resourceType'),'/providers/roleAssignments')]",
+            "type": "Microsoft.Authorization/roleAssignments",
             "apiVersion": "2018-09-01-preview",
             "properties": {
                 "roleDefinitionId": "[parameters('roleDefinitionId')]",
-                "principalId": "[parameters('principalId')]"
+                "principalId": "[parameters('principalId')]",
+                "scope": "[parameters('scope')]"
             }
         }
     ]

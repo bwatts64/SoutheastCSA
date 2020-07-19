@@ -1297,13 +1297,45 @@
         }
       },
       {
-        "name": "configJumpBox",
+        "name": "grantMIRole",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "deployJumpBox"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('grantRBACTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "roleAssignmentName": {
+              "value": "JumpBox-Contributor"
+            },
+            "roleDefinitionId": {
+              "value": "b24988ac-6180-42a0-ab88-20f7382dd24c"
+            },
+            "principalId": {
+              "value": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('jumpName')), '2019-08-01', 'full').identity.principalId]"
+            },
+            "scope": {
+              "value": "[resourceGroup().id]"
+            }
+          }
+        }
+      },
+      {
+        "name": "configJumpBox",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deployJumpBox",
+          "grantMIRole"
         ],
         "properties": {
           "mode": "Incremental",
