@@ -113,6 +113,10 @@
       "adminPassword": {
         "type": "securestring",
         "defaultValue": "1qaz@WSX3edc$RFV"
+      },
+      "guid": {
+        "type": "string",
+        "defaultValue": "[newGuid()]"
       }
     },
     "variables": {
@@ -1314,7 +1318,7 @@
           },
           "parameters": {
             "roleAssignmentName": {
-              "value": "JumpBox-Contributor"
+              "value": "[parameters('guid')]"
             },
             "roleDefinitionId": {
               "value": "b24988ac-6180-42a0-ab88-20f7382dd24c"
