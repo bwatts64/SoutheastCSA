@@ -22,15 +22,10 @@ configuration configJumpBox
                 if((test-path HKLM:\SOFTWARE\Microsoft\DSC) -eq $false) {
                     mkdir HKLM:\SOFTWARE\Microsoft\DSC
                 }
+                $moduleInstalled=$null
+                $modulesInstalled = Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\DSC -ErrorAction SilentlyContinue
 
-                try {
-                    $modulesInstalled = Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DSC\ModulesInstalled -ErrorAction SilentlyContinue
-                }
-                catch {
-                    $modulesInstalled = 'False'
-                }
-
-                if($modulesInstalled -ne 'True') {
+                if($modulesInstalled.ModuledInstalled -ne 'True') {
                     curl https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/windows/amd64/kubectl.exe -o C:\windows\system32\kubectl.exe
                     Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
                     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
