@@ -1320,6 +1320,18 @@
             },
             "configFunction": {
               "value": "[variables('jumpConfigFunction')]"
+            },
+            "lbIP": {
+              "value": "10.0.0.44"
+            },
+            "acrName": {
+              "value": "[variables('acrName')]"
+            },
+            "aksName": {
+              "value": "[variables('AksresourceName')]"
+            },
+            "rgName": {
+              "value": "[parameters('resourceGroup')]"
             }
           }
         }

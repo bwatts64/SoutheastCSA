@@ -10,6 +10,18 @@
         },
         "configFunction": {
             "type": "string"
+        },
+        "lbIP": {
+            "type": "string"
+        },
+        "acrName": {
+            "type": "string"
+        },
+        "aksName": {
+            "type": "string"
+        },
+        "rgName": {
+            "type": "string"
         }
     },
     "resources": [
@@ -25,7 +37,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "modulesUrl": "[parameters('configModuleURL')]",
-                    "configurationFunction": "[parameters('configFunction')]",   
+                    "configurationFunction": "[parameters('configFunction')]",
+                    "properties": {
+                        "lbIP": "[parameters('lbIP')]",
+                        "acrName": "[parameters('acrName')]",
+                        "aksName": "[parameters('aksName')]",
+                        "rgName": "[parameters('rgName')]"
+                    }   
                 },
                 "protectedSettings": {}
             }

@@ -9,6 +9,9 @@ configuration configJumpBox
         [String]$acrName,
 
         [Parameter(Mandatory)]
+        [String]$aksName,
+
+        [Parameter(Mandatory)]
         [String]$rgName
     )
 
