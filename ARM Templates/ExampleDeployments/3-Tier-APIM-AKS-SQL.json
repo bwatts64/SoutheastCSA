@@ -141,6 +141,7 @@
       "deployDNSARecordTemplateURL": "[concat(variables('gitUri'),'/PrivateDNSARecord.json')]",
       "deployAzureSqlDbURL": "[concat(variables('gitUri'),'/SQLDB.json')]",
       "deployWindowsServerTemplateURL": "[concat(variables('gitUri'),'/WindowsVirtualMachine.json')]",
+      "grantRBACTemplateURL": "[concat(variables('gitUri'),'/RBACRoleAssignment.json')]",
       "addVMInsightsURL": "[concat(variables('gitUri'),'/EnableVMInsights.json')]",
       "addDSCExtension": "[concat(variables('gitUri'),'/DSCExtension.json')]",
       "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
@@ -1319,7 +1320,7 @@
               "value": "b24988ac-6180-42a0-ab88-20f7382dd24c"
             },
             "principalId": {
-              "value": "[reference(resourceId('Microsoft.Compute/virtualMachines', variables('jumpName')), '2019-08-01', 'full').identity.principalId]"
+              "value": "[reference('deployJumpBox').outputs.principalID.value]"
             },
             "scope": {
               "value": "[resourceGroup().id]"

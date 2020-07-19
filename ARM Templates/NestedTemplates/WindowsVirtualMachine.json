@@ -115,6 +115,10 @@
     "vmID": {
       "type": "string",
       "value": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+    },
+    "principalID": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachineName')), '2019-08-01', 'full').identity.principalId]"
     }
   }
 }
