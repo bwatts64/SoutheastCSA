@@ -39,10 +39,10 @@ configuration configJumpBox
                 }
 
                 mkdir c:\aksdeploy
-                curl https://raw.githubusercontent.com/bwatts64/templates/master/Yaml/aks-helloworld.yaml -o C:\aksdeploy\aks-helloworld.yaml
-                curl https://raw.githubusercontent.com/bwatts64/templates/master/Yaml/hello-world-ingress.yaml -o C:\aksdeploy\hello-world-ingress.yaml
-                curl https://raw.githubusercontent.com/bwatts64/templates/master/Yaml/ingress-demo.yaml -o C:\aksdeploy\ingress-demo.yaml
-                curl https://raw.githubusercontent.com/bwatts64/templates/master/Yaml/internal-ingress.yaml -o C:\aksdeploy\internal-ingress.yaml
+                curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/aks-helloworld.yaml -o C:\aksdeploy\aks-helloworld.yaml
+                curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/hello-world-ingress.yaml -o C:\aksdeploy\hello-world-ingress.yaml
+                curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/ingress-demo.yaml -o C:\aksdeploy\ingress-demo.yaml
+                curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/internal-ingress.yaml -o C:\aksdeploy\internal-ingress.yaml
 
                 $file = get-content C:\aksdeploy\internal-ingress.yaml
                 $file -replace '#loadBalancerIP: 10.240.0.42',"loadBalancerIP: $lbIP" | out-file C:\aksdeploy\internal-ingress.yaml
