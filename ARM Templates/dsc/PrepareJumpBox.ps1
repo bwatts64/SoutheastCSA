@@ -19,6 +19,11 @@ configuration configJumpBox
     {
 	    Script InstallTools {
             SetScript = {
+                $lbIP = $using:lbIP
+                $acrName = $using:acrName
+                $aksName = $using:aksName
+                $rgName = $using:rgName
+
                 if((test-path HKLM:\SOFTWARE\Microsoft\DSC) -eq $false) {
                     mkdir HKLM:\SOFTWARE\Microsoft\DSC
                 }
