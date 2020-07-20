@@ -57,6 +57,9 @@
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2019-07-01",
       "location": "[resourceGroup().location]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "dependsOn": [
         "[variables('nicName')]"
       ],
