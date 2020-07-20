@@ -38,7 +38,10 @@ configuration configJumpBox
                     Restart-Computer -Force 
                 }
 
-                mkdir c:\aksdeploy
+                if((test-path c:\aksdeploy) -eq $false) {
+                    mkdir c:\aksdeploy
+                }
+                
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/aks-helloworld.yaml -o C:\aksdeploy\aks-helloworld.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/hello-world-ingress.yaml -o C:\aksdeploy\hello-world-ingress.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/ingress-demo.yaml -o C:\aksdeploy\ingress-demo.yaml
