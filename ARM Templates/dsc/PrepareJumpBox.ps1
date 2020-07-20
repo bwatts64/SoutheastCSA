@@ -84,7 +84,7 @@ configuration configJumpBox
                 "Apply Ingress Demo" | out-file c:\aksdeploy\log.txt -Append
                 kubectl apply -f C:\aksdeploy\ingress-demo.yaml
                 "Apply Internal Ingress" | out-file c:\aksdeploy\log.txt -Append
-                kubectl apply -f C:\aksdeploy\internal-ingress.yaml
+                kubectl apply -f C:\aksdeploy\hello-world-ingress.yaml
 
                                
             }
