@@ -188,7 +188,7 @@
                             "name": "[concat(parameters('vnetName'), '/', parameters('subnetName'), '/Microsoft.Authorization/', guid(resourceGroup().id, deployment().name))]",
                             "properties": {
                                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4d97b98b-1d4f-4787-a291-c67834d212e7')]",
-                                "principalId": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.principalId]",
+                                "principalId": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.objectId]",
                                 "scope": "[parameters('vnetSubnetId')]"
                             }
                         }
@@ -205,7 +205,7 @@
         },
         "principalId": {
             "type": "string",
-            "value": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.principalId]"
+            "value": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.objectId]"
         }
     }
 }
