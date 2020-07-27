@@ -119,9 +119,6 @@
             "metadata": {
                 "description": "A CIDR notation IP for Docker bridge."
             }
-        },
-        "identityID": {
-            "type": "string"
         }
     },
     "resources": [
