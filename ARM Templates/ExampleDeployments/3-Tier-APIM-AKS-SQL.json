@@ -652,7 +652,7 @@
                 ]
             },
             "objectId": {
-                "value": "[reference('createManagedIdentity').outputs.principalId.value]"
+                "value": "[reference('createManagedIdentity').outputs.resourceId.value]"
             }
           }
         }
@@ -1069,7 +1069,7 @@
               "value": false
             },
             "miResourceId": {
-              "value": "[reference('createAKSManagedIdentity').outputs.ObjectId.value]"
+              "value": "[reference('createAKSManagedIdentity').outputs.resourceId.value]"
             },
             "miClientId": {
               "value": "[reference('createAKSManagedIdentity').outputs.clientId.value]"

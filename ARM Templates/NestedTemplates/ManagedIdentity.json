@@ -20,9 +20,9 @@
         }
     ],
     "outputs": {
-      "ObjectId": {
+      "resourceId": {
         "type": "string",
-        "value": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', parameters('identityName')), '2018-11-30', 'Full').identity.principalId]"
+        "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', parameters('identityName'))]"
       },
       "PrincipalId": {
         "type": "string",
