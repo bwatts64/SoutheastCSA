@@ -119,6 +119,15 @@
             "metadata": {
                 "description": "A CIDR notation IP for Docker bridge."
             }
+        },
+        "miResourceId": {
+            "type": "string"
+        },
+        "miClientId": {
+            "type": "string"
+        },
+        "miPrincipalId": {
+            "type": "string"
         }
     },
     "resources": [
@@ -166,7 +175,15 @@
             },
             "tags": {},
             "identity": {
-                "type": "SystemAssigned"
+                "principalId": null,
+                "tenantId": null,
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "[parameters('miResourceId')]": {
+                        "clientId": "[parameters('miClientId')]",
+                        "principalId": "[parameters('miPrincipalId')]"
+                    }
+                }
             }
         },
         {

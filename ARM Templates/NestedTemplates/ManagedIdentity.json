@@ -27,6 +27,10 @@
       "PrincipalId": {
         "type": "string",
         "value": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', parameters('identityName')), '2018-11-30', 'Full').principalId]"
+      },
+      "clientId": {
+        "type": "string",
+        "value": "[reference(concat('Microsoft.ManagedIdentity/userAssignedIdentities/', parameters('identityName')), '2018-11-30', 'Full').clientId]"    
       }
     }
 }
