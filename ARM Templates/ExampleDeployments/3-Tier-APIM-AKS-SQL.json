@@ -954,27 +954,7 @@
             }
           }
         }
-      },
-      {
-        "name": "createAKSManagedIdentity",
-        "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2018-05-01",
-        "resourceGroup": "[parameters('resourceGroup')]",
-        "dependsOn": [
-        ],
-        "properties": {
-          "mode": "Incremental",
-          "templateLink": {
-            "uri": "[variables('createManagedIdentityTemplateURL')]",
-            "contentVersion": "1.0.0.0"
-          },
-          "parameters": {
-            "identityName": {
-                "value": "[concat(variables('AksresourceName'),'-identity')]"
-            }
-          }
-        }
-      },      
+      },  
       {
         "name": "deployAKSCluster",
         "comments":"apiVersion is flagged, but haven't changed as not sure if this is needed for some features.",
