@@ -117,6 +117,14 @@
       "guid": {
         "type": "string",
         "defaultValue": "[newGuid()]"
+      },
+      "aksNetworkGuid": {
+        "type": "string",
+        "defaultValue": "[newGuid()]"
+      },
+      "aksACRGuid": {
+        "type": "string",
+        "defaultValue": "[newGuid()]"
       }
     },
     "variables": {
@@ -948,13 +956,90 @@
         }
       },
       {
+        "name": "createAKSManagedIdentity",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('createManagedIdentityTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "identityName": {
+                "value": "[concat(variables('AksresourceName'),'-identity')]"
+            }
+          }
+        }
+      },
+      {
+        "name": "grantAKSNetworkRole",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "createAKSManagedIdentity"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('grantRBACTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "roleAssignmentName": {
+              "value": "[parameters('aksNetworkGuid')]"
+            },
+            "roleDefinitionId": {
+              "value": "4d97b98b-1d4f-4787-a291-c67834d212e7"
+            },
+            "principalId": {
+              "value": "[reference('createAKSManagedIdentity').outputs.resourceId.value]"
+            }
+          }
+        }
+      },
+      {
+        "name": "grantAKSACRRole",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "grantAKSNetworkRole"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('grantRBACTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "roleAssignmentName": {
+              "value": "[parameters('aksACRGuid')]"
+            },
+            "roleDefinitionId": {
+              "value": "7f951dda-4ed3-4680-a7ca-43fe172d538d"
+            },
+            "principalId": {
+              "value": "[reference('createAKSManagedIdentity').outputs.resourceId.value]"
+            }
+          }
+        }
+      },
+      {
         "name": "deployAKSCluster",
         "comments":"apiVersion is flagged, but haven't changed as not sure if this is needed for some features.",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2019-10-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-          "deployVNET"
+          "deployVNET",
+          "grantAKSACRRole"
         ],
         "properties": {
           "mode": "Incremental",
@@ -1010,6 +1095,9 @@
             },
             "enableNodePublicIP": {
               "value": false
+            },
+            "identityID": {
+                "value": "[reference('createAKSManagedIdentity').outputs.resourceId.value]"
             }
         }
        }

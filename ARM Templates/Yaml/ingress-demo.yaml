@@ -24,9 +24,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ingress-demo
+  name: internal-app
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
   - port: 80
   selector:

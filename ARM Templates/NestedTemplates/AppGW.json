@@ -14,13 +14,6 @@
         "skuSize": {
             "type": "string"
         },
-        "capacity": {
-            "type": "int",
-            "defaultValue": 2
-        },
-        "subnetName": {
-            "type": "string"
-        },
         "zones": {
             "type": "array"
         },
@@ -38,9 +31,6 @@
         },
         "privateIpAddress": {
             "type": "string"
-        },
-        "autoScaleMaxCapacity": {
-            "type": "int"
         },
         "subnetID": {
             "type": "string"

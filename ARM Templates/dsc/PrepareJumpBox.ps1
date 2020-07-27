@@ -47,19 +47,10 @@ configuration configJumpBox
                     mkdir c:\aksdeploy
                 }
                 
-                curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/aks-helloworld.yaml -o C:\aksdeploy\aks-helloworld.yaml
-                curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/hello-world-ingress.yaml -o C:\aksdeploy\hello-world-ingress.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/ingress-demo.yaml -o C:\aksdeploy\ingress-demo.yaml
-                curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/internal-ingress.yaml -o C:\aksdeploy\internal-ingress.yaml
-
-                $file = get-content C:\aksdeploy\internal-ingress.yaml
-                $file -replace '#loadBalancerIP: 10.240.0.42',"loadBalancerIP: $lbIP" | out-file C:\aksdeploy\internal-ingress.yaml
-
-                $file = get-content C:\aksdeploy\aks-helloworld.yaml
-                $file -replace 'neilpeterson/aks-helloworld:v1',"$acrName/aks-helloworld:latest" | out-file C:\aksdeploy\aks-helloworld.yaml
-
+                
                 $file = get-content C:\aksdeploy\ingress-demo.yaml
-                $file -replace 'neilpeterson/aks-helloworld:v1',"$acrName/aks-helloworld:latest" | out-file C:\aksdeploy\ingress-demo.yaml
+                $file -replace 'neilpeterson/aks-helloworld:v1',"$acrName.azurecr.io/aks-helloworld:latest" | out-file C:\aksdeploy\ingress-demo.yaml
                 "Logging into Azure" | out-file c:\aksdeploy\log.txt
                 az login --identity
 
@@ -67,11 +58,7 @@ configuration configJumpBox
                 az aks get-credentials --resource-group testarm --name poc-AKSResource
                 "Creating namespace" | out-file c:\aksdeploy\log.txt -Append
                 kubectl create namespace ingress-basic #Create a namespace for your ingress resources
-                "Adding helm repo" | out-file c:\aksdeploy\log.txt -Append
-                helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-                "Helm install of nginx" | out-file c:\aksdeploy\log.txt -Append
-                helm install nginx-ingress stable/nginx-ingress --namespace ingress-basic -f C:\aksdeploy\internal-ingress.yaml --set controller.replicaCount=2 --set controller.extraArgs.enable-ssl-passthrough=""
-
+                
                 "ACr Login" | out-file c:\aksdeploy\log.txt -Append
                 az acr login --name $acrName --expose-token
                 "Attach AKS to ACR" | out-file c:\aksdeploy\log.txt -Append
@@ -79,14 +66,8 @@ configuration configJumpBox
                 "Import image to ACR" | out-file c:\aksdeploy\log.txt -Append
                 az acr import --name $acrName --source docker.io/neilpeterson/aks-helloworld:v1 --image aks-helloworld:latest
 
-                "Apply AKS-HellowWorld" | out-file c:\aksdeploy\log.txt -Append
-                kubectl apply -f C:\aksdeploy\aks-helloworld.yaml
                 "Apply Ingress Demo" | out-file c:\aksdeploy\log.txt -Append
-                kubectl apply -f C:\aksdeploy\ingress-demo.yaml
-                "Apply Internal Ingress" | out-file c:\aksdeploy\log.txt -Append
-                kubectl apply -f C:\aksdeploy\hello-world-ingress.yaml
-
-                               
+                kubectl apply -f C:\aksdeploy\ingress-demo.yaml               
             }
             TestScript = { $false }
             GetScript = { }
