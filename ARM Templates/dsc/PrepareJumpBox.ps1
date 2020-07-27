@@ -67,7 +67,7 @@ configuration configJumpBox
                 az acr import --name $acrName --source docker.io/neilpeterson/aks-helloworld:v1 --image aks-helloworld:latest
 
                 "Apply Ingress Demo" | out-file c:\aksdeploy\log.txt -Append
-                kubectl apply -f C:\aksdeploy\ingress-demo.yaml               
+                kubectl apply -f C:\aksdeploy\ingress-demo.yaml -n ingress-basic               
             }
             TestScript = { $false }
             GetScript = { }
