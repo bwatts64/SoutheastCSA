@@ -119,12 +119,6 @@
             "metadata": {
                 "description": "A CIDR notation IP for Docker bridge."
             }
-        },
-        "miResourceId": {
-            "type": "string"
-        },
-        "miPrincipalId": {
-            "type": "string"
         }
     },
     "resources": [
