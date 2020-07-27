@@ -172,14 +172,7 @@
             },
             "tags": {},
             "identity": {
-                "principalId": null,
-                "tenantId": null,
-                "type": "UserAssigned",
-                "userAssignedIdentities": {
-                    "[parameters('miResourceId')]": {
-                        "principalId": "[parameters('miPrincipalId')]"
-                    }
-                }
+                "type": "SystemAssigned"
             }
         },
         {
