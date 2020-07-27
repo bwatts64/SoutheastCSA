@@ -169,13 +169,7 @@
             },
             "tags": {},
             "identity": {
-                "type": "UserAssigned",
-                "userAssignedIdentities": {
-                    "[parameters('identityID')]": {}
-                }
-            },
-            "servicePrincipalProfile": {
-                "clientId": "[parameters('identityId')]"
+                "type": "SystemAssigned"
             }
         },
         {
@@ -211,6 +205,10 @@
         "controlPlaneFQDN": {
             "type": "string",
             "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('aksResourceName'))).privateFQDN]"
+        },
+        "principalId": {
+            "type": "string",
+            "value": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.objectId]"
         }
     }
 }
