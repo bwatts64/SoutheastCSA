@@ -222,7 +222,7 @@
         },
         "principalId": {
             "type": "string",
-            "value": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.objectId]"
+            "value": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.principalId]"
         }
     }
 }
