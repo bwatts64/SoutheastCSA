@@ -173,6 +173,9 @@
                 "userAssignedIdentities": {
                     "[parameters('identityID')]": {}
                 }
+            },
+            "servicePrincipalProfile": {
+                "clientId": "[parameters('identityId')]"
             }
         },
         {
