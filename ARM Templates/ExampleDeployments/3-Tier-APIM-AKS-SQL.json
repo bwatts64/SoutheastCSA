@@ -88,7 +88,7 @@
       },
       "networkPlugin": {
           "type": "string",
-          "defaultValue": "kubenet"
+          "defaultValue": "azure"
       },
       "enableRBAC": {
           "type": "bool",
@@ -1400,7 +1400,7 @@
           }
         }
       },
-            {
+      {
         "name": "createFeatureRole",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
@@ -1427,7 +1427,8 @@
             },
             "Scope": {
               "value": [
-                "[subscription().id]"
+                "[subscription().id]",
+                "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
               ]
             }
           }
@@ -1500,6 +1501,9 @@
             },
             "aksName": {
               "value": "[variables('AksresourceName')]"
+            },
+            "gwName": {
+              "value": "[variables('applicationGatewayName')]"
             },
             "rgName": {
               "value": "[parameters('resourceGroup')]"

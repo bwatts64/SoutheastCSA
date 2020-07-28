@@ -12,6 +12,9 @@ configuration configJumpBox
         [String]$aksName,
 
         [Parameter(Mandatory)]
+        [String]$gwName,
+
+        [Parameter(Mandatory)]
         [String]$rgName
     )
 
@@ -22,6 +25,7 @@ configuration configJumpBox
                 $lbIP = $using:lbIP
                 $acrName = $using:acrName
                 $aksName = $using:aksName
+                $gwName = $using:gwName
                 $rgName = $using:rgName
 
                 if((test-path HKLM:\SOFTWARE\Microsoft\DSC) -eq $false) {
@@ -58,7 +62,10 @@ configuration configJumpBox
                 az aks get-credentials --resource-group testarm --name poc-AKSResource --file C:\aksdeploy\config >> c:\aksdeploy\log.txt
                 "Creating namespace" | out-file c:\aksdeploy\log.txt -Append
                 kubectl create namespace ingress-basic --kubeconfig C:\aksdeploy\config >> c:\aksdeploy\log.txt
-                
+                "Getting appgw" | out-file c:\aksdeploy\log.txt -Append
+                $appgwId=$(az network application-gateway show -n $gwName -g $rgName -o tsv --query "id")
+                "Enabling AppGW addon" | out-file c:\aksdeploy\log.txt -Append 
+                az aks enable-addons -n $aksName -g $rgName -a ingress-appgw --appgw-id $appgwId
                 "ACr Login" | out-file c:\aksdeploy\log.txt -Append
                 az acr login --name $acrName --expose-token >> c:\aksdeploy\log.txt
                 "Attach AKS to ACR" | out-file c:\aksdeploy\log.txt -Append
