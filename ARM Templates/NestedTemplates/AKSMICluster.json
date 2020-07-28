@@ -177,7 +177,7 @@
         },
         "principalId": {
             "type": "string",
-            "value": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.objectId]"
+            "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('aksResourceName')), '2020-06-01', 'full').identity.principalId]"
         }
     }
 }
