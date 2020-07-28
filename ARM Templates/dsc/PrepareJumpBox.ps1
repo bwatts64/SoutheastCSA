@@ -55,9 +55,9 @@ configuration configJumpBox
                 az login --identity >> c:\aksdeploy\log.txt
 
                 "Getting AKS Creds" | out-file c:\aksdeploy\log.txt -Append
-                az aks get-credentials --resource-group testarm --name poc-AKSResource >> c:\aksdeploy\log.txt
+                az aks get-credentials --resource-group testarm --name poc-AKSResource --file C:\aksdeploy\config >> c:\aksdeploy\log.txt
                 "Creating namespace" | out-file c:\aksdeploy\log.txt -Append
-                kubectl create namespace ingress-basic >> c:\aksdeploy\log.txt
+                kubectl create namespace ingress-basic --kubeconfig C:\aksdeploy\config >> c:\aksdeploy\log.txt
                 
                 "ACr Login" | out-file c:\aksdeploy\log.txt -Append
                 az acr login --name $acrName --expose-token >> c:\aksdeploy\log.txt
@@ -67,7 +67,7 @@ configuration configJumpBox
                 az acr import --name $acrName --source docker.io/neilpeterson/aks-helloworld:v1 --image aks-helloworld:latest >> c:\aksdeploy\log.txt
 
                 "Apply Ingress Demo" | out-file c:\aksdeploy\log.txt -Append
-                kubectl apply -f C:\aksdeploy\ingress-demo.yaml -n ingress-basic >> c:\aksdeploy\log.txt               
+                kubectl apply -f C:\aksdeploy\ingress-demo.yaml -n ingress-basic --kubeconfig C:\aksdeploy\config >> c:\aksdeploy\log.txt               
             }
             TestScript = { $false }
             GetScript = { }
