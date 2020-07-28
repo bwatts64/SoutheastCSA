@@ -52,22 +52,22 @@ configuration configJumpBox
                 $file = get-content C:\aksdeploy\ingress-demo.yaml
                 $file -replace 'neilpeterson/aks-helloworld:v1',"$acrName.azurecr.io/aks-helloworld:latest" | out-file C:\aksdeploy\ingress-demo.yaml
                 "Logging into Azure" | out-file c:\aksdeploy\log.txt
-                az login --identity
+                az login --identity >> c:\aksdeploy\log.txt
 
                 "Getting AKS Creds" | out-file c:\aksdeploy\log.txt -Append
-                az aks get-credentials --resource-group testarm --name poc-AKSResource
+                az aks get-credentials --resource-group testarm --name poc-AKSResource >> c:\aksdeploy\log.txt
                 "Creating namespace" | out-file c:\aksdeploy\log.txt -Append
-                kubectl create namespace ingress-basic #Create a namespace for your ingress resources
+                kubectl create namespace ingress-basic >> c:\aksdeploy\log.txt
                 
                 "ACr Login" | out-file c:\aksdeploy\log.txt -Append
-                az acr login --name $acrName --expose-token
+                az acr login --name $acrName --expose-token >> c:\aksdeploy\log.txt
                 "Attach AKS to ACR" | out-file c:\aksdeploy\log.txt -Append
-                az aks update -n $aksName -g $rgName --attach-acr $acrName
+                az aks update -n $aksName -g $rgName --attach-acr $acrName >> c:\aksdeploy\log.txt
                 "Import image to ACR" | out-file c:\aksdeploy\log.txt -Append
-                az acr import --name $acrName --source docker.io/neilpeterson/aks-helloworld:v1 --image aks-helloworld:latest
+                az acr import --name $acrName --source docker.io/neilpeterson/aks-helloworld:v1 --image aks-helloworld:latest >> c:\aksdeploy\log.txt
 
                 "Apply Ingress Demo" | out-file c:\aksdeploy\log.txt -Append
-                kubectl apply -f C:\aksdeploy\ingress-demo.yaml -n ingress-basic               
+                kubectl apply -f C:\aksdeploy\ingress-demo.yaml -n ingress-basic >> c:\aksdeploy\log.txt               
             }
             TestScript = { $false }
             GetScript = { }

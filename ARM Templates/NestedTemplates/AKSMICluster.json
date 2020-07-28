@@ -175,7 +175,11 @@
             "type": "string",
             "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('aksResourceName'))).privateFQDN]"
         },
-        "principalId": {
+        "poolPrincipalId": {
+            "type": "string",
+            "value": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.objectId]"
+        },
+        "aksPrincipalId": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('aksResourceName')), '2020-06-01', 'full').identity.principalId]"
         }
