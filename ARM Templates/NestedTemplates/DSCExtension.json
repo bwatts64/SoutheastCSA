@@ -20,6 +20,9 @@
         "aksName": {
             "type": "string"
         },
+        "gwName": {
+            "type": "string"
+        },
         "rgName": {
             "type": "string"
         }
@@ -42,6 +45,7 @@
                         "lbIP": "[parameters('lbIP')]",
                         "acrName": "[parameters('acrName')]",
                         "aksName": "[parameters('aksName')]",
+                        "gwName": "[parameters('gwName')]",
                         "rgName": "[parameters('rgName')]"
                     }   
                 },
