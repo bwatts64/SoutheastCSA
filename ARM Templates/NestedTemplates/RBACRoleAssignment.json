@@ -10,6 +10,9 @@
         },
         "principalId": {
             "type": "string"
+        },
+        "scope": {
+            "type": "string"
         }
     },
     "resources": [
@@ -20,7 +23,7 @@
             "properties": {
                 "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', parameters('roleDefinitionId'))]",
                 "principalId": "[parameters('principalId')]",
-                "scope": "[resourceGroup().id]"
+                "scope": "[parameters('scope')]"
             }
         }
     ]

@@ -154,6 +154,7 @@
       "deployAzureSqlDbURL": "[concat(variables('gitUri'),'/SQLDB.json')]",
       "deployWindowsServerTemplateURL": "[concat(variables('gitUri'),'/WindowsVirtualMachine.json')]",
       "grantRBACTemplateURL": "[concat(variables('gitUri'),'/RBACRoleAssignment.json')]",
+      "customRoleTemplateURL": "[concat(variables('gitUri'),'/CustomRole.json')]",
       "addVMInsightsURL": "[concat(variables('gitUri'),'/EnableVMInsights.json')]",
       "addDSCExtension": "[concat(variables('gitUri'),'/DSCExtension.json')]",
       "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
@@ -1046,6 +1047,9 @@
             },
             "principalId": {
               "value": "[reference('deployAKSCluster').outputs.aksPrincipalId.value]"
+            },
+            "scope": {
+              "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
             }
           }
         }
@@ -1389,6 +1393,74 @@
             },
             "principalId": {
               "value": "[reference('deployJumpBox').outputs.principalID.value]"
+            },
+            "scope": {
+              "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
+            }
+          }
+        }
+      },
+            {
+        "name": "createFeatureRole",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('customRoleTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "roleName": {
+              "value": "FeatureRegistrationContributor"
+            },
+            "Description": {
+              "value": "Allow registration of feature on the subscription"
+            },
+            "Actions": {
+              "value": [
+                "Microsoft.Features/providers/features/register/action"
+              ]
+            },
+            "Scope": {
+              "value": [
+                "[subscription().id]"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "grantMIFeatureRole",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deployJumpBox",
+          "createFeatureRole"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('grantRBACTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "roleAssignmentName": {
+              "value": "[parameters('guid')]"
+            },
+            "roleDefinitionId": {
+              "value": "[reference('createFeatureRole').outputs.roleDefinitionName.value]"
+            },
+            "principalId": {
+              "value": "[reference('deployJumpBox').outputs.principalID.value]"
+            },
+            "scope": {
+              "value": "[subscription().id]"
             }
           }
         }
