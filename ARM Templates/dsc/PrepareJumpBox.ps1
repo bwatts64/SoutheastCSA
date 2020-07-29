@@ -55,6 +55,7 @@ configuration configJumpBox
                 
                 $file = get-content C:\aksdeploy\ingress-demo.yaml
                 $file -replace 'neilpeterson/aks-helloworld:v1',"$acrName.azurecr.io/aks-helloworld:latest" | out-file C:\aksdeploy\ingress-demo.yaml
+                $file -replace 'loadBalancerIP: 10.240.0.25',"loadBalancerIP: $lbIP" | out-file C:\aksdeploy\ingress-demo.yaml
                 "Logging into Azure" | out-file c:\aksdeploy\log.txt
                 az login --identity >> c:\aksdeploy\log.txt
 
@@ -63,6 +64,7 @@ configuration configJumpBox
                 "Creating namespace" | out-file c:\aksdeploy\log.txt -Append
                 kubectl create namespace ingress-basic --kubeconfig C:\aksdeploy\config >> c:\aksdeploy\log.txt
                 "Getting appgw" | out-file c:\aksdeploy\log.txt -Append
+                az extension add --name aks-preview
                 $appgwId=$(az network application-gateway show -n $gwName -g $rgName -o tsv --query "id")
                 "Enabling AppGW addon" | out-file c:\aksdeploy\log.txt -Append 
                 az aks enable-addons -n $aksName -g $rgName -a ingress-appgw --appgw-id $appgwId

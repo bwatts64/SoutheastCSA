@@ -125,6 +125,13 @@
       "aksACRGuid": {
         "type": "string",
         "defaultValue": "[newGuid()]"
+      },
+      "lbIP": {
+        "type": "string",
+        "defaultValue": "192.168.1.126",
+        "metadata": {
+          "description": "IP address to be assigned to AKS LoadBalancer. Should be in the AKS-SN range"
+        }
       }
     },
     "variables": {
@@ -716,22 +723,22 @@
             },
             "backendAddresses": {
                 "value": [
-                  "[concat('APIMGW|', variables('apimName'),'.azure-api.net')]"
+                  "[concat('AKSLB|', parameters('lbIP'))]"
                 ]
             },
             "backendHttpSettings": {
                 "value": [
-                  "APIM-HTTPSSetting|443|Https|Disabled|30|/"
+                  "AKS-BE|80|Http|Disabled|30|/"
                 ]
             },
             "httpListeners": {
                 "value": [
-                  "APIMListener|PIP1|HTTPS-443"
+                  "HTTPSListener|PIP1|HTTPS-443"
                 ]
             },
             "requestRoutingRules": {
                 "value": [
-                  "Apim-RoutingRule|APIMListener|APIMGW|APIM-HTTPSSetting"
+                  "AKS-RoutingRule|HTTPSListener|AKSLB|AKS-BE"
                 ]
             }
           }
@@ -1494,7 +1501,7 @@
               "value": "[variables('jumpConfigFunction')]"
             },
             "lbIP": {
-              "value": "10.0.0.44"
+              "value": "[parameters('lbIP')]"
             },
             "acrName": {
               "value": "[variables('acrName')]"
