@@ -1085,6 +1085,9 @@
             },
             "principalId": {
               "value": "[reference('deployAKSCluster').outputs.poolPrincipalId.value]"
+            },
+            "scope": {
+              "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
             }
           }
         }
