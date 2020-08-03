@@ -151,6 +151,7 @@
       "deployLATemplateURL": "[concat(variables('gitUri'),'/Log_Analytics_Workspace.json')]",
       "deployAPIMTemplateURL": "[concat(variables('gitUri'),'/APIM.json')]",
       "deployAzureAKSTemplateURL": "[concat(variables('gitUri'),'/AKSMICluster.json')]",
+      "deployScriptTemplateURL": "[concat(variables('gitUri'),'/DeploymentScript.json')]",
       "deployACRTemplateURL": "[concat(variables('gitUri'),'/ACR.json')]",
       "deployAppInsightsURL": "[concat(variables('gitUri'),'/ApplicationInsights.json')]",
       "deployPrivateEndpointTemplateURL": "[concat(variables('gitUri'),'/PrivateEndpoint.json')]",
@@ -183,8 +184,8 @@
       "jumpSKU": "2019-Datacenter",
       "jumpSize": "Standard_DS1_v2",
       "bastionHostName": "[concat(parameters('deploymentPrefix'),'-bastion',uniqueString(parameters('resourceGroup')))]",
-      "jumpConfigModuleURL": "[concat(variables('dscUri'),'/PrepareJumpBox.zip')]",
-      "jumpConfigFunction": "PrepareJumpBox.ps1\\configJumpBox"
+      "scriptUri": "[concat(variables('dscUri'),'/ConfigureEnvironment.ps1')]",
+      "arguments": "[concat('-lbip ', parameters('lbIP'), ' -acrName ', variables('acrName'), ' -aksName ', variables('AksresourceName'), ' -gwName ', variables('applicationGatewayName'), ' -rgName ', parameters('resourceGroup'))]"
     },
     "resources": [
       {
@@ -626,6 +627,26 @@
           "parameters": {
             "identityName": {
                 "value": "[concat(variables('applicationGatewayName'),'-identity')]"
+            }
+          }
+        }
+      },
+      {
+        "name": "createscriptManagedIdentity",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('createManagedIdentityTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "identityName": {
+                "value": "pocscript-identity"
             }
           }
         }
@@ -1380,13 +1401,13 @@
         }
       },
       {
-        "name": "grantMIRole",
+        "name": "grantscriptMIRole",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-          "deployJumpBox"
+          "createscriptManagedIdentity"
         ],
         "properties": {
           "mode": "Incremental",
@@ -1402,7 +1423,7 @@
               "value": "b24988ac-6180-42a0-ab88-20f7382dd24c"
             },
             "principalId": {
-              "value": "[reference('deployJumpBox').outputs.principalID.value]"
+              "value": "[reference('createscriptManagedIdentity').outputs.PrincipalId.value]"
             },
             "scope": {
               "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
@@ -1483,40 +1504,30 @@
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-          "deployJumpBox",
-          "grantMIRole",
-          "deployAKSCluster"
+          "createscriptManagedIdentity",
+          "grantscriptMIRole",
+          "deployAKSCluster",
+          "deployAppGW",
+          "deployACR"
         ],
         "properties": {
           "mode": "Incremental",
           "templateLink": {
-            "uri": "[variables('addDSCExtension')]",
+            "uri": "[variables('deployScriptTemplateURL')]",
             "contentVersion": "1.0.0.0"
           },
           "parameters": {
-            "vmName": {
-              "value": "[variables('jumpName')]"
+            "scriptUri": {
+              "value": "[variables('scriptUri')]"
             },
-            "configModuleURL": {
-              "value": "[variables('jumpConfigModuleURL')]"
+            "kind": {
+              "value": "AzurePowerShell"
             },
-            "configFunction": {
-              "value": "[variables('jumpConfigFunction')]"
+            "identityID": {
+              "value": "[reference('createscriptManagedIdentity').outputs.resourceId.value]"
             },
-            "lbIP": {
-              "value": "[parameters('lbIP')]"
-            },
-            "acrName": {
-              "value": "[variables('acrName')]"
-            },
-            "aksName": {
-              "value": "[variables('AksresourceName')]"
-            },
-            "gwName": {
-              "value": "[variables('applicationGatewayName')]"
-            },
-            "rgName": {
-              "value": "[parameters('resourceGroup')]"
+            "arguments": {
+              "value": "[variables('arguments')]"
             }
           }
         }
