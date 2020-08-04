@@ -20,6 +20,7 @@
       "subnets": {
         "type": "array",
         "defaultValue": [
+          "APIM-SN|192.168.1.224/28|Enabled",
           "AKS-SN|192.168.1.0/25|Enabled",
           "Data-SN|192.168.1.176/28|Disabled",
           "Shared-SN|192.168.1.160/28|Enabled",
@@ -60,6 +61,26 @@
       "keyVaultResourceGroup": {
           "type": "string",
           "defaultValue": "Lab"
+      },
+      "apimsku": {
+        "type": "string",
+        "defaultValue": "Developer"
+      },
+      "apimcapacity": {
+        "type": "int",
+        "defaultValue": 1
+      },
+      "apimEmail": {
+        "type": "string",
+        "defaultValue": "do-not-reply@microsoft.com"
+      },
+      "apimPublisherName": {
+          "type": "string",
+          "defaultValue": "POC Architecture"
+      },
+      "apimVirtualNetworkType": {
+          "type": "string",
+          "defaultValue": "Internal"
       },
       "kubernetesVersion": {
         "type": "string",
@@ -128,8 +149,8 @@
       "getSubnetAddressPrefixTemplateURL": "[concat(variables('gitUri'),'/GetSubnetAddressPrefix.json')]",
       "deployKeyVaultAccessTemplate": "[concat(variables('gitUri'),'/KeyVaultAccessPolicy.json')]",
       "deployLATemplateURL": "[concat(variables('gitUri'),'/Log_Analytics_Workspace.json')]",
+      "deployAPIMTemplateURL": "[concat(variables('gitUri'),'/APIM.json')]",
       "deployAzureAKSTemplateURL": "[concat(variables('gitUri'),'/AKSMICluster.json')]",
-      "deployScriptTemplateURL": "[concat(variables('gitUri'),'/DeploymentScript.json')]",
       "deployACRTemplateURL": "[concat(variables('gitUri'),'/ACR.json')]",
       "deployAppInsightsURL": "[concat(variables('gitUri'),'/ApplicationInsights.json')]",
       "deployPrivateEndpointTemplateURL": "[concat(variables('gitUri'),'/PrivateEndpoint.json')]",
@@ -149,6 +170,7 @@
       "applicationGatewayName": "[concat(parameters('deploymentPrefix'),'appgw',uniqueString(parameters('resourceGroup')))]",
       "keyVaultName": "labVaultwb",
       "acrName": "[concat(parameters('deploymentPrefix'),'acr',uniqueString(parameters('resourceGroup')))]",
+      "apimName": "[concat(parameters('deploymentPrefix'),'apim',uniqueString(parameters('resourceGroup')))]",
       "AksresourceName":"[concat(parameters('deploymentPrefix'),'-AKSResource')]",
       "nodeResourceGroup":"[concat(parameters('deploymentPrefix'),'-AKSRG',uniqueString(parameters('resourceGroup')))]",
       "dnsPrefix":"[concat(variables('AksresourceName'),'-dns')]",
@@ -161,8 +183,8 @@
       "jumpSKU": "2019-Datacenter",
       "jumpSize": "Standard_DS1_v2",
       "bastionHostName": "[concat(parameters('deploymentPrefix'),'-bastion',uniqueString(parameters('resourceGroup')))]",
-      "scriptUri": "[concat(variables('dscUri'),'/ConfigureEnvironment.sh')]",
-      "arguments": "[concat('-l ', parameters('lbIP'), ' -a ', variables('acrName'), ' -k ', variables('AksresourceName'), ' -g ', variables('applicationGatewayName'), ' -r ', parameters('resourceGroup'))]"
+      "jumpConfigModuleURL": "[concat(variables('dscUri'),'/PrepareJumpBox.zip')]",
+      "jumpConfigFunction": "PrepareJumpBox.ps1\\configJumpBox"
     },
     "resources": [
       {
@@ -291,12 +313,84 @@
         }
       },
       {
+        "name": "getAPIMAddressPrefix",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deploySharedNSG"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('getSubnetAddressPrefixTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "vnetName": {
+              "value": "[variables('vnetName')]"
+            },
+            "subnetName": {
+              "value": "APIM-SN"
+            }
+          }
+        }
+      },
+      {
+        "name": "deployAPIMNSG",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "getAPIMAddressPrefix"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployNSGTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "virtualNetworkName": {
+              "value": "[variables('vnetName')]"
+            },
+            "subnetName": {
+              "value": "APIM-SN"
+            },
+            "addressPrefix": {
+              "value": "[reference('getAPIMAddressPrefix').outputs.addressPrefix.value]"
+            },
+            "nsgName": {
+              "value": "APIM-NSG"
+            },
+            "securityRules": {
+              "value": [
+                "allow-443|Allow-SSL|Tcp|*|443|192.168.1.144/28|*|Allow|100|Inbound",
+                "allow-443-mgmt|Allow-Management|Tcp|*|3443|ApiManagement|VirtualNetwork|Allow|120|Inbound",
+                "allow-azure-storage|Allow-Storage-Account|Tcp|*|443|VirtualNetwork|Storage|Allow|100|Outbound",
+                "allow-azure-ad|Allow-Azure-AD|Tcp|*|443|VirtualNetwork|AzureActiveDirectory|Allow|110|Outbound",
+                "allow-event-hub|Allow-EventHub|Tcp|*|5671-5672|VirtualNetwork|EventHub|Allow|120|Outbound",
+                "allow-event-hub-443|Allow-EventHub|Tcp|*|443|VirtualNetwork|EventHub|Allow|130|Outbound",
+                "allow-file-share|Allow-FileShare|Tcp|*|445|VirtualNetwork|Storage|Allow|140|Outbound",
+                "allow-health-status|Allow-Health-Status|Tcp|*|443|VirtualNetwork|AzureCloud|Allow|150|Outbound",
+                "allow-azure-monitor|Allow-Azure-Monitor|Tcp|*|443|VirtualNetwork|AzureMonitor|Allow|160|Outbound",
+                "allow-azure-cache-ob|Allow-Azure-Cahce|Tcp|*|6381-6383|VirtualNetwork|VirtualNetwork|Allow|170|Outbound",
+                "allow-azure-cache-ib|Allow-Azure-Cahce|Tcp|*|6381-6383|VirtualNetwork|VirtualNetwork|Allow|130|Inbound",
+                "allow-rate-limit-ib|Allow-Rate-Limit-Policy|UDP|*|4290|VirtualNetwork|VirtualNetwork|Allow|140|Inbound",
+                "allow-rate-limit-ob|Allow-Rate-Limit-Policy|UDP|*|4290|VirtualNetwork|VirtualNetwork|Allow|180|Outbound",
+                "allow-loadbalancer-ib|Allow-Azure-Load-Balancer|Tcp|*|*|AzureLoadBalancer|VirtualNetwork|Allow|150|Inbound"
+              ]
+            }
+          }
+        }
+      },
+      {
         "name": "getAKSAddressPrefix",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-          "deployAppGWNSG"
+          "deployAPIMNSG"
         ],
         "properties": {
           "mode": "Incremental",
@@ -537,26 +631,6 @@
         }
       },
       {
-        "name": "createscriptManagedIdentity",
-        "type": "Microsoft.Resources/deployments",
-        "apiVersion": "2018-05-01",
-        "resourceGroup": "[parameters('resourceGroup')]",
-        "dependsOn": [
-        ],
-        "properties": {
-          "mode": "Incremental",
-          "templateLink": {
-            "uri": "[variables('createManagedIdentityTemplateURL')]",
-            "contentVersion": "1.0.0.0"
-          },
-          "parameters": {
-            "identityName": {
-                "value": "pocscript-identity"
-            }
-          }
-        }
-      },
-      {
         "name": "deployKeyVaultAccess",
         "type": "Microsoft.Resources/deployments",
         "resourceGroup": "[parameters('keyVaultResourceGroup')]",
@@ -706,6 +780,58 @@
             }
           }
         }  
+      },
+      {
+        "name": "deployAPIM",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+            "deployVNET"
+        ],
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+            "uri": "[variables('deployAPIMTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+            },
+            "parameters": {
+                "apimname": {
+                    "value": "[variables('apimName')]"
+                },
+                "sku": {
+                    "value": "[parameters('apimsku')]"
+                },
+                "capacity": {
+                    "value": "[parameters('apimcapacity')]"
+                },
+                "apimEmail": {
+                    "value": "[parameters('apimEmail')]"
+                },
+                "subnetID": {
+                    "value": "[concat(reference('deployVNET').outputs.vnetId.value,'/subnets/APIM-SN')]"
+                },
+                "publisherName": {
+                    "value": "[parameters('apimPublisherName')]"
+                },
+                "virtualNetworkType": {
+                    "value": "[parameters('apimVirtualNetworkType')]"
+                },
+                "disableGateway": {
+                  "value": false
+                },
+                "loggerName":{
+                  "value": "[variables('appInsightsName')]"
+                },
+                "workspaceID": {
+                  "value": "[reference('deployLogAnalytics').outputs.workspaceId.value]"
+                },
+                "appinsightsID": {
+                  "value": "[reference('deployAppInsights').outputs.appInsightsID.value]"
+                }
+            }
+        }
       },
       {
         "name": "deployACR",
@@ -959,9 +1085,6 @@
             },
             "principalId": {
               "value": "[reference('deployAKSCluster').outputs.poolPrincipalId.value]"
-            },
-            "scope": {
-              "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
             }
           }
         }
@@ -1254,13 +1377,13 @@
         }
       },
       {
-        "name": "grantscriptMIRole",
+        "name": "grantMIRole",
         "comments":"",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-          "deployAppGW"
+          "deployJumpBox"
         ],
         "properties": {
           "mode": "Incremental",
@@ -1276,10 +1399,76 @@
               "value": "b24988ac-6180-42a0-ab88-20f7382dd24c"
             },
             "principalId": {
-              "value": "[reference('createscriptManagedIdentity').outputs.PrincipalId.value]"
+              "value": "[reference('deployJumpBox').outputs.principalID.value]"
             },
             "scope": {
               "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
+            }
+          }
+        }
+      },
+      {
+        "name": "createFeatureRole",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('customRoleTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "roleName": {
+              "value": "FeatureRegistrationContributor"
+            },
+            "Description": {
+              "value": "Allow registration of feature on the subscription"
+            },
+            "Actions": {
+              "value": [
+                "Microsoft.Features/providers/features/register/action"
+              ]
+            },
+            "Scope": {
+              "value": [
+                "[subscription().id]",
+                "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "grantMIFeatureRole",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deployJumpBox",
+          "createFeatureRole"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('grantRBACTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "roleAssignmentName": {
+              "value": "[parameters('guid')]"
+            },
+            "roleDefinitionId": {
+              "value": "[reference('createFeatureRole').outputs.roleDefinitionName.value]"
+            },
+            "principalId": {
+              "value": "[reference('deployJumpBox').outputs.principalID.value]"
+            },
+            "scope": {
+              "value": "[subscription().id]"
             }
           }
         }
@@ -1291,30 +1480,40 @@
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-          "createscriptManagedIdentity",
-          "grantscriptMIRole",
-          "deployAKSCluster",
-          "deployAppGW",
-          "deployACR"
+          "deployJumpBox",
+          "grantMIRole",
+          "deployAKSCluster"
         ],
         "properties": {
           "mode": "Incremental",
           "templateLink": {
-            "uri": "[variables('deployScriptTemplateURL')]",
+            "uri": "[variables('addDSCExtension')]",
             "contentVersion": "1.0.0.0"
           },
           "parameters": {
-            "scriptUri": {
-              "value": "[variables('scriptUri')]"
+            "vmName": {
+              "value": "[variables('jumpName')]"
             },
-            "kind": {
-              "value": "AzureCLI"
+            "configModuleURL": {
+              "value": "[variables('jumpConfigModuleURL')]"
             },
-            "identityID": {
-              "value": "[reference('createscriptManagedIdentity').outputs.resourceId.value]"
+            "configFunction": {
+              "value": "[variables('jumpConfigFunction')]"
             },
-            "arguments": {
-              "value": "[variables('arguments')]"
+            "lbIP": {
+              "value": "[parameters('lbIP')]"
+            },
+            "acrName": {
+              "value": "[variables('acrName')]"
+            },
+            "aksName": {
+              "value": "[variables('AksresourceName')]"
+            },
+            "gwName": {
+              "value": "[variables('applicationGatewayName')]"
+            },
+            "rgName": {
+              "value": "[parameters('resourceGroup')]"
             }
           }
         }
