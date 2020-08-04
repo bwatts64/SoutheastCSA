@@ -34,7 +34,7 @@
             },
             "properties": {
                 "forceUpdateTag": 1,
-                "azPowerShellVersion": "3.0",  // or "azCliVersion": "2.0.80"
+                "azCliVersion": "2.0.80",  // or "azCliVersion": "2.0.80"
                 "arguments": "[parameters('arguments')]",
                 "primaryScriptUri": "[parameters('scriptUri')]",
                 "timeout": "PT60M",
