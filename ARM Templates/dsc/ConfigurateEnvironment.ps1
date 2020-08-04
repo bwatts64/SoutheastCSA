@@ -15,7 +15,7 @@ param
     [Parameter(Mandatory)]
     [String]$rgName
 )
-if((test-path ./aksdeploy) -eq $false) {
+if((test-path c:\aksdeploy) -eq $false) {
     mkdir aksdeploy
 }
                 
@@ -29,7 +29,7 @@ $file -replace 'loadBalancerIP: 10.240.0.25',"loadBalancerIP: $lbIP" | out-file 
 "Getting AKS Creds" | out-file ./aksdeploy/log.txt -Append
 az aks get-credentials --resource-group testarm --name poc-AKSResource --file ./aksdeploy/config >> ./aksdeploy/log.txt
 "Creating namespace" | out-file ./aksdeploy/log.txt -Append
-kubectl create namespace ingress-basic --kubeconfig C:\aksdeploy\config >> ./aksdeploy/log.txt
+kubectl create namespace ingress-basic --kubeconfig ./aksdeploy/config >> ./aksdeploy/log.txt
 "Getting appgw" | out-file ./aksdeploy/log.txt -Append
 az extension add --name aks-preview
 $appgwId=$(az network application-gateway show -n $gwName -g $rgName -o tsv --query "id")

@@ -22,8 +22,9 @@
                 "name": "Premium"
             },
             "properties": {
-                "publicNetworkAccess": "Enabled",
-                "adminUserEnabled": "Enabled"
+                "adminUserEnabled": true,
+                "publicNetworkAccess": "Enabled"
+                
             }
         }
     ],
