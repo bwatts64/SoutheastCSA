@@ -13,19 +13,7 @@
             "metadata": {
                 "description": "The name of AKS node resource group."
             }
-        },
-        "vnetName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of Vnet."
-            }
-        },
-        "subnetName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of subnetName."
-            }
-        },        
+        },       
         "dnsPrefix": {
             "type": "string",
             "metadata": {
