@@ -1,5 +1,3 @@
-#!/bin/bash
-
 while getopts l:a:k:g:r: option
 do
 case "${option}"
