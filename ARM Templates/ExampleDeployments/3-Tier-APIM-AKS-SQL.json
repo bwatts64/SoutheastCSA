@@ -161,8 +161,8 @@
       "jumpSKU": "2019-Datacenter",
       "jumpSize": "Standard_DS1_v2",
       "bastionHostName": "[concat(parameters('deploymentPrefix'),'-bastion',uniqueString(parameters('resourceGroup')))]",
-      "scriptUri": "[concat(variables('dscUri'),'/ConfigurateEnvironment.ps1')]",
-      "arguments": "[concat('-lbip ', parameters('lbIP'), ' -acrName ', variables('acrName'), ' -aksName ', variables('AksresourceName'), ' -gwName ', variables('applicationGatewayName'), ' -rgName ', parameters('resourceGroup'))]"
+      "scriptUri": "[concat(variables('dscUri'),'/ConfigureEnvironment.sh')]",
+      "arguments": "[concat('-l ', parameters('lbIP'), ' -a ', variables('acrName'), ' -k ', variables('AksresourceName'), ' -g ', variables('applicationGatewayName'), ' -r ', parameters('resourceGroup'))]"
     },
     "resources": [
       {
@@ -1308,7 +1308,7 @@
               "value": "[variables('scriptUri')]"
             },
             "kind": {
-              "value": "AzurePowerShell"
+              "value": "AzureCLI"
             },
             "identityID": {
               "value": "[reference('createscriptManagedIdentity').outputs.resourceId.value]"
