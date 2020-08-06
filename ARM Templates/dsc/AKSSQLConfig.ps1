@@ -143,7 +143,7 @@
 
 
                 $saURI="$($storageAccount.Context.BlobEndPoint)sqlbackup/dbbackup.bacpac"
-                New-AzSqlDatabaseImport -ResourceGroupName $rgName -ServerName $sqlName -DatabaseName $dbName -StorageKeyType "StorageAccessKey" -StorageKey $saKey -StorageUri $saURI -AdministratorLogin $sqlAdmin -AdministratorLoginPassword $sqlPwd -Edition $edition -ServiceObjectiveName S0 
+                az sql db import -s $sqlName -n $dbName -g $rgName -p $sqlPwd -u $sqlAdmin --storage-key $saKey --storage-key-type StorageAccessKey --storage-uri $saURI
 
                 kubectl apply -f c:\aksdeploy\secrets.yaml -n ingress-basic --kubeconfig c:\aksdeploy\config >> c:\aksdeploy\log.txt
                 kubectl apply -f c:\aksdeploy\frontend.yaml -n ingress-basic --kubeconfig c:\aksdeploy\config >> c:\aksdeploy\log.txt
