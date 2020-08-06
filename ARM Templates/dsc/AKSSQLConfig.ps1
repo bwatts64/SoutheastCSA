@@ -72,7 +72,8 @@
 
                     Restart-Computer -Force 
                 }
-                Login-AzAccount -Identity               
+                "Logging into Azure" | out-file c:\aksdeploy\log.txt
+                az login --identity >> c:\aksdeploy\log.txt              
 
                 if((test-path c:\aksdeploy) -eq $false) {
                     mkdir c:\aksdeploy
@@ -84,21 +85,18 @@
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/services.yaml -o c:\aksdeploy\services.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/SQL/dbbackup.bacpac -o c:\aksdeploy\dbbackup.bacpac
                 
-                $saKey = (Get-AzStorageAccountKey -ResourceGroupName $rgName -AccountName $saName)[0].Value
+                $saKey = az storage account keys list -g $rgName -n $saName --query [0].value -o tsv
                 # Place bacpac file in storage
                 $file = "c:\aksdeploy\dbbackup.bacpac"
-                $storageAccount = Get-AzStorageAccount -ResourceGroupName $rgName -Name $saName
-                $ctx = $storageAccount.Context
                 $containerName = "sqlbackup"
-                New-AzStorageContainer -Name $containerName -Context $ctx -Permission blob
-                Set-AzStorageBlobContent -File "c:\aksdeploy\dbbackup.bacpac" -Container $containerName -Blob "dbbackup.bacpac" -Context $ctx
+                
+                az storage container create --account-name $saName --name $containerName --auth-mode login
+                az storage blob upload --account-name $saName --container-name $containerName --name dbbackup.bacpac --file $file --auth-mode login
 
-                $db = Get-AzSqlDatabase -ResourceGroupName testarm -DatabaseName $dbName -ServerName $sqlName
-                $edition = $db.Edition
-
-
+                $edition = az sql db show -g $rgName -s $sqlName -n $dbName --query edition
+                
                 $dbConnectionString="Server=tcp:$sqlName.database.windows.net,1433;Initial Catalog=$dbName;Persist Security Info=False;User ID=azureuser;Password=$sqlPwd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-                $dbConnectionString | out-file c:\aksdeploy\log.txt
+                $dbConnectionString | out-file c:\aksdeploy\log.txt -Append
 
                 $b64Connection = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($dbConnectionString))
                 $b64saName = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($saName))
