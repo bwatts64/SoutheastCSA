@@ -43,6 +43,9 @@
         },
         "sqlPwd": {
             "type": "securestring"
+        },
+        "saKey": {
+            "type": "string"
         }
     },
     "resources": [
@@ -70,7 +73,8 @@
                         "sqlName": "[parameters('sqlName')]",
                         "dbName": "[parameters('dbName')]",
                         "sqlAdmin": "[parameters('sqlAdmin')]",
-                        "sqlPwd": "[parameters('sqlPwd')]"
+                        "sqlPwd": "[parameters('sqlPwd')]",
+                        "saKey": "[parameters('saKey')]"
                     }   
                 },
                 "protectedSettings": {}

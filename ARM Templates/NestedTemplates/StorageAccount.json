@@ -74,6 +74,10 @@
         "saConnectionString": {
             "type": "string",
             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('saName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('saName')), '2019-06-01').keys[0].value)]"
+        },
+        "saKey": {
+            "type": "string",
+            "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('saName')), '2019-06-01').keys[0].value]"
         }
     }
 }

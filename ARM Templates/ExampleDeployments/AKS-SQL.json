@@ -1358,6 +1358,9 @@
             },
             "sqlPwd": {
                 "value": "[parameters('adminPassword')]"
+            },
+            "saKey": {
+              "value": "[reference('deploySAAccount').outputs.saKey.value]"
             }
           }
         }

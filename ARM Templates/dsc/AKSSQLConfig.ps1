@@ -33,7 +33,10 @@
         [String]$sqlAdmin,
 
         [Parameter(Mandatory)]
-        [String]$sqlPwd
+        [String]$sqlPwd,
+
+        [Parameter(Mandatory)]
+        [String]$saKey
     )
 
     Node localhost
@@ -51,6 +54,7 @@
                 $dbName = $using:dbName
                 $sqlAdmin = $using:sqlAdmin
                 $sqlPwd = $using:sqlPwd
+                $saKey = $using:saKey
 
                 if((test-path HKLM:\SOFTWARE\Microsoft\DSC) -eq $false) {
                     mkdir HKLM:\SOFTWARE\Microsoft\DSC
@@ -87,12 +91,11 @@
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/services.yaml -o c:\aksdeploy\services.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/SQL/dbbackup.bacpac -o c:\aksdeploy\dbbackup.bacpac
                 
-                $saKey = az storage account keys list -g $rgName -n $saName --query [0].value -o tsv
                 # Place bacpac file in storage
                 $file = "c:\aksdeploy\dbbackup.bacpac"
                 $containerName = "sqlbackup"
                 
-                az storage container create --account-name $saName --name $containerName --auth-mode login
+                az storage container create --account-name $saName --account-key $saKey --name $containerName
                 az storage blob upload --account-name $saName --account-key $saKey --container-name $containerName --name dbbackup.bacpac --file $file
 
                 $edition = az sql db show -g $rgName -s $sqlName -n $dbName --query edition
