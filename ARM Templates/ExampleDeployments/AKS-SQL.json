@@ -145,7 +145,7 @@
       "grantRBACTemplateURL": "[concat(variables('gitUri'),'/RBACRoleAssignment.json')]",
       "deployStorageURL": "[concat(variables('gitUri'),'/StorageAccount.json')]",
       "addVMInsightsURL": "[concat(variables('gitUri'),'/EnableVMInsights.json')]",
-      "addDSCExtension": "[concat(variables('gitUri'),'/DSCExtension.json')]",
+      "addDSCExtension": "[concat(variables('gitUri'),'/DSCAKS-SQL.json')]",
       "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
       "appInsightsName": "[concat(parameters('deploymentPrefix'),'ai',uniqueString(parameters('resourceGroup')))]",
       "vnetName": "[concat(parameters('deploymentPrefix'),'vnet',uniqueString(parameters('resourceGroup')))]",
@@ -877,12 +877,6 @@
             },
             "nodeResourceGroup":{
               "value": "[variables('nodeResourceGroup')]"
-            },
-            "VNetName" : {
-              "value": "[variables('vNETName')]"
-            },
-            "SubnetName" : {
-              "value": "AKS-SN"
             },  
             "dnsPrefix": {
                 "value": "[variables('dnsPrefix')]"
@@ -978,6 +972,9 @@
             },
             "principalId": {
               "value": "[reference('deployAKSCluster').outputs.poolPrincipalId.value]"
+            },
+            "scope": {
+              "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
             }
           }
         }
@@ -1348,7 +1345,7 @@
                 "value": "[variables('saName')]"
             },
             "aiKey": {
-                "value": "[reference('deployAppInsights').outputs.InstrumentationKey.value]"
+                "value": "[reference('deployAppInsights').outputs.aiKey.value]"
             },
             "sqlName": {
                 "value": "[variables('sqlServerName')]"

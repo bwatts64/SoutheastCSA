@@ -33,7 +33,7 @@
         [String]$sqlAdmin,
 
         [Parameter(Mandatory)]
-        [SecureString]$sqlPwd
+        [String]$sqlPwd
     )
 
     Node localhost
@@ -70,8 +70,7 @@
 
                     Restart-Computer -Force 
                 }
-
-                $sqlPwd = $sqlPwd | convertfrom-securestring
+                               
 
                 if((test-path c:\aksdeploy) -eq $false) {
                     mkdir aksdeploy
