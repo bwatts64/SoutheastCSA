@@ -66,11 +66,13 @@
                     Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.201 -Force
                     Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
                     Install-Package -Name docker -ProviderName DockerMsftProvider -Force
+                    Install-Module -Name AZ -Force
                     Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\DSC -Name ModuledInstalled -Value "True"
+                    
 
                     Restart-Computer -Force 
                 }
-                               
+                Login-AzAccount -Identity               
 
                 if((test-path c:\aksdeploy) -eq $false) {
                     mkdir c:\aksdeploy
@@ -81,8 +83,7 @@
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/frontend.yaml -o c:\aksdeploy\frontend.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/services.yaml -o c:\aksdeploy\services.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/SQL/dbbackup.bacpac -o c:\aksdeploy\dbbackup.bacpac
-
-                $aiKey = Get-AzApplicationInsightsApiKey -
+                
                 $saKey = (Get-AzStorageAccountKey -ResourceGroupName $rgName -AccountName $saName)[0].Value
                 # Place bacpac file in storage
                 $file = "c:\aksdeploy\dbbackup.bacpac"
