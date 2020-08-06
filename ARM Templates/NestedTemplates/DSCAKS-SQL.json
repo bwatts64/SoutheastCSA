@@ -70,12 +70,10 @@
                         "sqlName": "[parameters('sqlName')]",
                         "dbName": "[parameters('dbName')]",
                         "sqlAdmin": "[parameters('sqlAdmin')]",
-                        "sqlPwd": "PrivateSettingsRef:sqlPwd"
+                        "sqlPwd": "[parameters('sqlPwd')]"
                     }   
                 },
-                "protectedSettings": {
-                    "sqlPwd": "[parameters('sqlPwd')]"
-                }
+                "protectedSettings": { }
             }
         }
     ]
