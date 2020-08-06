@@ -142,7 +142,7 @@
                 az acr import --name $acrName --source docker.io/bwatts64/sessions:latest --image sessions:latest >> c:\aksdeploy\log.txt
 
 
-                $saURI="$($storageAccount.Context.BlobEndPoint)sqlbackup/dbbackup.bacpac"
+                $saURI="$(az storage account show -n $saName -g $rgName --query primaryEndpoints.blob)sqlbackup/dbbackup.bacpac" -replace """",""
                 az sql db import -s $sqlName -n $dbName -g $rgName -p $sqlPwd -u $sqlAdmin --storage-key $saKey --storage-key-type StorageAccessKey --storage-uri $saURI
 
                 kubectl apply -f c:\aksdeploy\secrets.yaml -n ingress-basic --kubeconfig c:\aksdeploy\config >> c:\aksdeploy\log.txt
