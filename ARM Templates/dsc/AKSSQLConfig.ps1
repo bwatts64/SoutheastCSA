@@ -93,7 +93,7 @@
                 $containerName = "sqlbackup"
                 
                 az storage container create --account-name $saName --name $containerName --auth-mode login
-                az storage blob upload --account-name $saName --container-name $containerName --name dbbackup.bacpac --file $file --auth-mode login
+                az storage blob upload --account-name $saName --account-key $saKey --container-name $containerName --name dbbackup.bacpac --file $file
 
                 $edition = az sql db show -g $rgName -s $sqlName -n $dbName --query edition
                 
