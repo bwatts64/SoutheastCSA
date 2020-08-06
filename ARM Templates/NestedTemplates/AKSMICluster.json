@@ -159,10 +159,6 @@
         }
     ],
     "outputs": {
-        "controlPlaneFQDN": {
-            "type": "string",
-            "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('aksResourceName'))).privateFQDN]"
-        },
         "poolPrincipalId": {
             "type": "string",
             "value": "[reference(parameters('aksResourceName')).identityProfile.kubeletidentity.objectId]"

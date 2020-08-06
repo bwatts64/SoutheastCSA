@@ -1,0 +1,26 @@
+CREATE TABLE AuditLogs(
+   Id UNIQUEIDENTIFIER,
+   Action INT,
+   Log varchar(max),
+   Date datetime,
+   PRIMARY KEY( Id )
+);
+
+CREATE TABLE Sessions(
+   Id UNIQUEIDENTIFIER,
+   Title varchar(max),
+   Abstract varchar(max),
+   Date datetime,
+   Conference varchar(max),
+   Speaker varchar(max),
+   Level INT,
+   Audience INT,
+   PRIMARY KEY( Id )
+);
+CREATE TABLE Votings(
+   Id UNIQUEIDENTIFIER,
+   SessionId UNIQUEIDENTIFIER,
+   Value INT,
+   Date datetime,
+   PRIMARY KEY( Id )
+);

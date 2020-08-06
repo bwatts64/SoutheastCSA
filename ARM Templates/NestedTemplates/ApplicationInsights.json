@@ -25,6 +25,10 @@
         "appInsightsID": {
             "type": "string",
             "value": "[resourceId('microsoft.insights/components', parameters('name'))]"
+        },
+        "aiKey": {
+            "type": "string",
+            "value": "[reference(resourceId('microsoft.insights/components',parameters('name'))).InstrumentationKey]"
         }
     }
 }

@@ -10,10 +10,6 @@
         "type": "string",
         "defaultValue": "testarm"
       },
-      "location": {
-          "type": "string",
-          "defaultValue": "eastus"
-      },
       "addressRange": {
         "type": "String",
         "defaultValue":"192.168.1.0/24",
@@ -65,6 +61,10 @@
           "type": "string",
           "defaultValue": "Lab"
       },
+      "location": {
+        "type": "string",
+        "defaultValue": "eastus"
+      },
       "kubernetesVersion": {
         "type": "string",
         "defaultValue": "1.15.11"
@@ -79,7 +79,7 @@
       },
       "enablePrivateCluster": {
           "type": "bool",
-          "defaultValue": false
+          "defaultValue": true
       },
       "enableHttpApplicationRouting": {
           "type": "bool",
@@ -143,7 +143,7 @@
       "deployAzureSqlDbURL": "[concat(variables('gitUri'),'/SQLDB.json')]",
       "deployWindowsServerTemplateURL": "[concat(variables('gitUri'),'/WindowsVirtualMachine.json')]",
       "grantRBACTemplateURL": "[concat(variables('gitUri'),'/RBACRoleAssignment.json')]",
-      "customRoleTemplateURL": "[concat(variables('gitUri'),'/CustomRole.json')]",
+      "deployStorageURL": "[concat(variables('gitUri'),'/StorageAccount.json')]",
       "addVMInsightsURL": "[concat(variables('gitUri'),'/EnableVMInsights.json')]",
       "addDSCExtension": "[concat(variables('gitUri'),'/DSCExtension.json')]",
       "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
@@ -164,16 +164,17 @@
       "jumpSKU": "2019-Datacenter",
       "jumpSize": "Standard_DS1_v2",
       "bastionHostName": "[concat(parameters('deploymentPrefix'),'-bastion',uniqueString(parameters('resourceGroup')))]",
-      "jumpConfigModuleURL": "[concat(variables('dscUri'),'/PrepareJumpBox.zip')]",
-      "jumpConfigFunction": "PrepareJumpBox.ps1\\configJumpBox"
+      "jumpConfigModuleURL": "[concat(variables('dscUri'),'/AKSSQLConfig.zip')]",
+      "jumpConfigFunction": "AKSSQLConfig.ps1\\configJumpBox",
+      "saName": "[concat(tolower(parameters('deploymentPrefix')),'sa',tolower(uniqueString(parameters('resourceGroup'))))]"
     },
     "resources": [
       {
-        "type": "Microsoft.Resources/resourceGroups",
-        "apiVersion": "2020-06-01",
-        "name": "[parameters('resourceGroup')]",
-        "location": "[parameters('location')]",
-        "properties": {}
+          "type": "Microsoft.Resources/resourceGroups",
+          "apiVersion": "2018-05-01",
+          "location": "[parameters('location')]",
+          "name": "[parameters('resourceGroup')]",
+          "properties": {}
       },
       {
         "name": "deployLogAnalytics",
@@ -181,7 +182,7 @@
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-            "[parameters('resourceGroup')]"
+          "[parameters('resourceGroup')]"
         ],
         "properties": {
           "mode": "Incremental",
@@ -201,9 +202,7 @@
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
-        "dependsOn": [
-            "[parameters('resourceGroup')]"
-        ],
+        "dependsOn": ["[parameters('resourceGroup')]"],
         "properties": {
           "mode": "Incremental",
           "templateLink": {
@@ -218,13 +217,36 @@
         }
       },
       {
+        "name": "deploySAAccount",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": ["[parameters('resourceGroup')]"],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployStorageURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "saName": {
+              "value": "[variables('saName')]"
+            },
+            "skuName": {
+              "value": "Standard_LRS"
+            },
+            "skuTier": {
+              "value": "Standard"
+            }
+          }
+        }
+      },
+      {
         "name": "deployVNET",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
-        "dependsOn": [
-            "[parameters('resourceGroup')]"
-        ],
+        "dependsOn": ["[parameters('resourceGroup')]"],
         "properties": {
           "mode": "Incremental",
           "templateLink": {
@@ -512,9 +534,7 @@
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
-        "dependsOn": [
-            "[parameters('resourceGroup')]"
-        ],
+        "dependsOn": ["[parameters('resourceGroup')]"],
         "properties": {
           "mode": "Incremental",
           "templateLink": {
@@ -540,7 +560,7 @@
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-            "[parameters('resourceGroup')]"
+          "[parameters('resourceGroup')]"
         ],
         "properties": {
           "mode": "Incremental",
@@ -969,7 +989,7 @@
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-            "[parameters('resourceGroup')]"
+          "[parameters('resourceGroup')]"
         ],
         "properties": {
           "mode": "Incremental",
@@ -1075,6 +1095,116 @@
             }
           }
         }  
+      },
+      {
+        "name": "deploySqlServerPE",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deploySqlDb",
+          "deployVNET"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployPrivateEndpointTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "peName": {
+              "value": "[concat(variables('sqlServerName'),'_pe')]"
+            },
+            "resourceID": {
+              "value": "[reference('deploySqlDb').outputs.sqlServerId.value]"
+            },
+            "vnetID": {
+              "value": "[reference('deployVNET').outputs.vnetId.value]"
+            },
+            "subnetName": {
+              "value": "Data-SN"
+            },
+            "groupID": {
+              "value": "SqlServer"
+            }
+          }
+        }
+      },
+      {
+        "name": "deploySqlDbDNSZone",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deployVNET"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployDNSZoneTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "zoneName": {
+              "value": "privatelink.database.windows.net"
+            },
+            "vnetID": {
+              "value": "[reference('deployVNET').outputs.vnetID.value]"
+            }
+          }
+        }
+      },
+      {
+        "name": "getSqlServerNICIP",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deploySqlServerPE"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('getNICIPUrL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "nicID": {
+              "value": "[reference('deploySqlServerPE').outputs.nicID.value]"
+            }
+          }
+        }
+      },
+      {
+        "name": "deploySQLDNSARecord",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "getACRNICIP"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deployDNSARecordTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "zoneName": {
+              "value": "privatelink.database.windows.net"
+            },
+            "recordName": {
+              "value": "[variables('sqlServerName')]"
+            },
+            "recordValue": {
+              "value": "[reference('getSqlServerNICIP').outputs.nicIP.value]"
+            }
+          }
+        }
       },
       {
         "name": "deployJumpBox",
@@ -1213,6 +1343,24 @@
             },
             "rgName": {
               "value": "[parameters('resourceGroup')]"
+            },
+            "saName": {
+                "value": "[variables('saName')]"
+            },
+            "aiKey": {
+                "value": "[reference('deployAppInsights').outputs.InstrumentationKey.value]"
+            },
+            "sqlName": {
+                "value": "[variables('sqlServerName')]"
+            },
+            "dbName": {
+                "value": "[variables('sqlDatabaseName')]"
+            },
+            "sqlAdmin": {
+                "value": "[parameters('adminUserName')]"
+            },
+            "sqlPwd": {
+                "value": "[parameters('adminPassword')]"
             }
           }
         }
@@ -1223,7 +1371,7 @@
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
-            "[parameters('resourceGroup')]"
+          "[parameters('resourceGroup')]"
         ],
         "properties": {
           "mode": "Incremental",
