@@ -73,7 +73,7 @@
                                
 
                 if((test-path c:\aksdeploy) -eq $false) {
-                    mkdir aksdeploy
+                    mkdir c:\aksdeploy
                 }
                 
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/secrets.yaml -o c:\aksdeploy\secrets.yaml

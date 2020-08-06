@@ -73,7 +73,7 @@
                         "sqlPwd": "[parameters('sqlPwd')]"
                     }   
                 },
-                "protectedSettings": { }
+                "protectedSettings": {}
             }
         }
     ]
