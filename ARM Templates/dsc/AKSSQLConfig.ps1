@@ -72,13 +72,15 @@
 
                     Restart-Computer -Force 
                 }
-                "Logging into Azure" | out-file c:\aksdeploy\log.txt
-                az login --identity >> c:\aksdeploy\log.txt              
 
                 if((test-path c:\aksdeploy) -eq $false) {
                     mkdir c:\aksdeploy
                 }
-                
+
+                "Logging into Azure" | out-file c:\aksdeploy\log.txt
+                az login --identity >> c:\aksdeploy\log.txt              
+
+                    
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/secrets.yaml -o c:\aksdeploy\secrets.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/backend.yaml -o c:\aksdeploy\backend.yaml
                 curl https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/Yaml/frontend.yaml -o c:\aksdeploy\frontend.yaml
