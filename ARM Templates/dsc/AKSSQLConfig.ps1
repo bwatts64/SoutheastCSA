@@ -67,6 +67,7 @@
                     Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
                     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
                     choco install kubernetes-helm --version 3.2.4 -y 
+                    choco install openssl.light -y
                     Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.201 -Force
                     Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
                     Install-Package -Name docker -ProviderName DockerMsftProvider -Force
@@ -103,10 +104,10 @@
                 $dbConnectionString="Server=tcp:$sqlName.database.windows.net,1433;Initial Catalog=$dbName;Persist Security Info=False;User ID=azureuser;Password=$sqlPwd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
                 $dbConnectionString | out-file c:\aksdeploy\log.txt -Append
 
-                $b64Connection = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($dbConnectionString))
-                $b64saName = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($saName))
-                $b64saKey = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($saKey))
-                $b64aiKey = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($aiKey))
+                $b64Connection = $dbConnectionString | openssl base64
+                $b64saName = $saName | openssl base64
+                $b64saKey = $saKey | openssl base64
+                $b64aiKey = $aiKey | openssl base64
 
                 
                 $file = get-content c:\aksdeploy\secrets.yaml
