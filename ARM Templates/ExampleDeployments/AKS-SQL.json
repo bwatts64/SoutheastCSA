@@ -122,9 +122,10 @@
       "dscUri": "https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/dsc",
       "deployVNETTemplateURL": "[concat(variables('gitUri'),'/VNet.json')]",
       "deployNSGTemplateURL": "[concat(variables('gitUri'),'/NSG-ExistingSubnet.json')]",
-      "deployNSGEmptyTemplateURL": "[concat(variables('gitUri'),'/NSG-Empty-ExistingSubnet.json')]",
+      "deployNSGEmptySETemplateURL": "[concat(variables('gitUri'),'/NSG-Empty-ExistingSubnet.json')]",
       "deployPublicIPTemplateURL": "[concat(variables('gitUri'),'/PublicIPAddress.json')]",
       "deployAppGWHTTPSListenerKVTemplateURL": "[concat(variables('gitUri'),'/AppGWHTTPSListenerKV.json')]",
+      "allowSQLVNetTemplateURL": "[concat(variables('gitUri'),'/SQLAllowVNet.json')]",
       "createManagedIdentityTemplateURL": "[concat(variables('gitUri'),'/UserAssignedManagedIdentity.json')]",
       "deployAppGWDiagnosticsTemplateURL": "[concat(variables('gitUri'),'/AppGWDiagnostics.json')]",
       "deployAzureBastionDiagnosticsTemplateURL": "[concat(variables('gitUri'),'/AzureBastionDiagnostics.json')]",
@@ -363,7 +364,7 @@
         "properties": {
           "mode": "Incremental",
           "templateLink": {
-            "uri": "[variables('deployNSGEmptyTemplateURL')]",
+            "uri": "[variables('deployNSGEmptySETemplateURL')]",
             "contentVersion": "1.0.0.0"
           },
           "parameters": {
@@ -378,6 +379,11 @@
             },
             "nsgName": {
               "value": "AKS-NSG"
+            },
+            "serviceEndpoints": {
+              "value": [
+                "Microsoft.Sql"
+              ]
             }
           }
         }
@@ -1048,6 +1054,30 @@
             }
           }
         }
+      },
+      {
+        "name": "allowSQLVNet",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deploySqlDb"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('allowSQLVNetTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "serverName": {
+                "value": "[variables('sqlServerName')]"
+            },
+            "subnetID": {
+                "value": "[concat(reference('deployVNET').outputs.vnetId.value,'/subnets/AKS-SN')]"
+            }
+          }
+        }  
       },
       {
         "name": "deploySQLDBDiagnostics",
