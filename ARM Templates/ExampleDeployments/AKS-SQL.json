@@ -122,7 +122,7 @@
       "dscUri": "https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/dsc",
       "deployVNETTemplateURL": "[concat(variables('gitUri'),'/VNet.json')]",
       "deployNSGTemplateURL": "[concat(variables('gitUri'),'/NSG-ExistingSubnet.json')]",
-      "deployNSGEmptySETemplateURL": "[concat(variables('gitUri'),'/NSG-Empty-ExistingSubnet.json')]",
+      "deployNSGEmptySETemplateURL": "[concat(variables('gitUri'),'/NSG-Empty-ExistingSubnetSE.json')]",
       "deployPublicIPTemplateURL": "[concat(variables('gitUri'),'/PublicIPAddress.json')]",
       "deployAppGWHTTPSListenerKVTemplateURL": "[concat(variables('gitUri'),'/AppGWHTTPSListenerKV.json')]",
       "allowSQLVNetTemplateURL": "[concat(variables('gitUri'),'/SQLAllowVNet.json')]",

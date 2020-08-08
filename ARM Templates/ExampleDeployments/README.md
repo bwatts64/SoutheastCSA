@@ -4,42 +4,38 @@ Having all the nested templates doesn't help you unless your able to utilize the
 
 ## Table of Content  
 
-* [3-Tier Applications](#3TierApplications)
-     - [APIM-AKS-Azure SQL](#APIMAKSSQL)  
+* [AKS Applications](#AKSApplications)
+     - [AppGW-AKS](#AppGWAKS)  
 
-# <a name="3TierApplications"></a>3 Tier Applications  
-Probably the most common deployment of an application is to utilize a 3 Tier Approach. For example you may have a Web Frontend, API Middle Tier, and a SQL Backend Tier.  We will walk through several 3 Tier Architectures below.  
+# <a name="AKSApplications"></a>AKS Applications  
+Below we'll walk through some depoloyments that involve an AKS Application being deployed in Azure
 
-## <a name="APIMAKSSQLPrivate"></a>API Based Application using APIM, AKS, and Azure SQL  
+## <a name="AppGWAKS"></a>Simple Web Application deployed in AKS and exposed thorugh Application Gateway  
 This architecture is made of of the following resources:  
 - Virtual Network with the following Subnets  
     - AppGW-SN  
-    - APIM-SN  
     - AKS-SN  
     - Data-SN  
     - Bastion-SN  
     - Management-SN  
 - Application Gateway v2 with WAF and Public IP  
-- APIM in Local Only Mode  
-- Private AKS Cluster  
+- AKS Cluster
 - Azure Container Registry with Private Endpoint  
-- Azure Key Vault with Private Endpoint  
-- Azure SQL DB with Private Endpoint  
 - Azure Bastion  
 - Virtual Machine  
-- Azure Private DNS Zones for APIM and Private Endpoints  
+- Azure Private DNS Zones for Private Endpoints  
 - Log Analytics Workspace for Monitoring  
 - Application Insights Instance for APIM and API  
 
-<img src="./images/3-Tier-APIM-AKS-SQL.png" alt="Environment"  Width="900">  
+<img src="./images/2-Tier-AppGW-AKS.png" alt="Environment"  Width="900">  
 
-This is an example of a privately deployed API application that is using Application Gateway as the public entry point for end users. We will secure the traffic between the subnets using Network Security Groups with the added protection of the WAF being utilized by the Application Gateway. The APIM resource will not have public access and will only be accesible via the Application Gateway or the Virtual Machine deployed on the Management Subnet. AKS, ACR, Key Vault, and Azure SQL will all utilize Private Endpoints and not allow access to their public endpoints.  
+This is an example of a simple web application being deployed in AKS. The deployment does not expose AKS directly but requires external users to go throuh the Application Gateway to access the website. We will secure the traffic between the subnets using Network Security Groups with the added protection of the WAF being utilized by the Application Gateway. ACR will Private Endpoints and not allow access to their public endpoints.  
 
 ### Virtual Network Architecture  
 Below we will outline the Virtual Networks and NSGs associated with them.  
 
 #### Application Gateway Subnet  
-This subnet allows public access to our APIs so we need to ensure that we protect it. We protect this subnet utilizing both a NSG and the WAF associated with the Application Gateway. The NSG will only allow traffic on port 443 for end user access and the ports needed for the Application Gateway health status. Below outlines the NSG that is created in the template.  
+We protect this subnet utilizing both a NSG and the WAF associated with the Application Gateway. The NSG will only allow traffic on port 443 for end user access and the ports needed for the Application Gateway health status. Below outlines the NSG that is created in the template.  
 
 | Name          | Priority | Description   |  Direction     | Source/Destination Port     | Source/Destination Address  | Protocol  | 
 |-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|
@@ -48,38 +44,11 @@ This subnet allows public access to our APIs so we need to ensure that we protec
 | Allow-HealthProbe     | 110 | Allow the AppGW Health Status | Inbound  | \*\/65200-65535 | Azure/\* | TCP |
 | Deny-All-Inbound		   | 500 | Deny All Traffic | Inbound | \*/\*   | \*/\* | TCP |  
 
-#### APIM Subnet  
-This subnet will host the APIM instance and will allow access on port 443 through the Application Gateway and the Management Subnet.  More details on the ports and protocols required for APIM can be found here: 
-
-https://docs.microsoft.com/en-us/azure/api-management/api-management-using-with-vnet  
-
-Below outlines the NSG that is created in the template.  
-
-| Name          | Priority | Description   |  Direction     | Source/Destination Port     | Source/Destination Address  | Protocol  | 
-|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|
-| Allow-443          | 100 | Allow 443 Traffic Inbound | Inbound  | \*\/443 | \*/\*   | TCP |
-| Allow-HealthProbe     | 110 | Allow the AppGW Health Status | Inbound  | \*\/65200-65535 | Azure/\* | TCP |
-| allow-azure-storage		   | 100 | Allow Azure Storage | Outbound | \*/443   | VirtualNetwork/Storage | TCP |
-| allow-azure-ad		   | 110 | Allow Azure AD | Outbound | \*/443   | VirtualNetwork/AzureActiveDirectory | TCP |   
-| allow-event-hub		   | 120 | Allow Azure Event Hub | Outbound | \*/5671,5672,443   | VirtualNetwork/EventHub | TCP |  
-| allow-file-share		   | 130 | Allow Azure File Share | Outbound | \*/445   | VirtualNetwork/Storage | TCP |  
-| allow-health-status		   | 140 | Allow Health Status | Outbound | \*/443   | VirtualNetwork/AzureCloud | TCP |  
-| allow-azure-monitor		   | 150 | Allow Azure Monitor | Outbound | \*/1886,443   | VirtualNetwork/AzureMonitor | TCP |  
-| allow-smtp-relay		   | 160 | Allow SMTP Relay | Outbound | \*/\24,587,25028   | VirtualNetwork/INTERNET | TCP |  
-| allow-azure-cache-ib		   | 120 | Allow Azure Cache IB | Inbound | \*/6381,6382,6383   | VirtualNetwork/VirtualNetwork | TCP |  
-| allow-azure-cache-ob		   | 170 | Allow Azure Cache OB | Outbound | \*/6381,6382,6383   | VirtualNetwork/VirtualNetwork | TCP |  
-| allow-load-balancer		   | 130 | Allow Azure Load Balancer | Inbound | \*/\* | AzureLoadBalancer/VirtualNetwork | TCP |  
-| allow-sql-endpoint		   | 180 | Allow Azure SQL | Outbound | \*/1433   | \*/VirtualNetwork | TCP |  
-| allow-rate-limit-ib		   | 140 | Allow rate limit | Inbound | \*/4290   | VirtualNetwork/VirtualNetwork | TCP | 
-| allow-rate-limit-ob		   | 190 | Allow rate lmit | Outbound | \*/4290   | VirtualNetwork/VirtualNetwork | TCP | 
-| deny-all-ib		   | 500 | Deny all inbound traffic | Inbound | \*/\*   | \*/\* | TCP |  
-| deny-all-ob		   | 500 | Deny all outbound traffic | Outbound | \*/\*   | \*/\* | TCP |  
-
 #### AKS Subnet  
 This subnet will have an empty NSG attached to it. We will utilize ingress and egress controllers within AKS to control traffic.  
 
 #### Data Subnet  
-The data subnet will only contain the virtual nics for the private endpoints. Note with these virtual network interfaces you cannot utilize NSGs to control the traffic. For this architecture we will allow any endpoint that can access the private IP to be able to connect to the private endpoint. If you needed to controll the traffic you could force tunnel all the traffic through a VNA (Virtual Network Appliance) and utilize that appliance to control the traffic. Being the only resources on this subnet are the private endpoints virtual nics we will deny all inbound and outbound traffic.   
+The data subnet in this template only contains the virtual nics for the private endpoints. In the furture we may add aditon data points for the application so we will go ahead and restrict this and deny all traffic. If other data points are added we would allow that traffic at that point. Note that even through the virtual nic sits on this VNET the NSGs do not take affect for the traffic to it.   
 
 | Name          | Priority | Description   |  Direction     | Source/Destination Port     | Source/Destination Address  | Protocol  | 
 |-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|
@@ -116,7 +85,6 @@ First we deploy the Virtual Network with the subnets defines. The following Para
       "subnets": {
         "type": "array",
         "defaultValue": [
-          "apim-SN|192.168.1.224/28|Enabled",
           "aks-SN|192.168.1.0/25|Enabled",
           "data-SN|192.168.1.176/28|Disabled",
           "shared-SN|192.168.1.160/28|Enabled",
@@ -141,47 +109,28 @@ The following is used to deploy the VNet:
               "value": "[parameters('subnets')]"
             }
 
-Now that we have a virtual network and subnets we need to create and attach NSGs to them. Below I'll walk through the APIM NSG deployment. To get the APIM Address range we call "GetSubnetAddressPrefix" using the following:
+Now that we have a virtual network and subnets we need to create and attach NSGs to them. Below I'll walk through the AKS NSG deployment. To get the AKS Address range we call "GetSubnetAddressPrefix" using the following:
 
             "vnetName": {
               "value": "[variables('vnetName')]"
             },
             "subnetName": {
-              "value": "APIM-SN"
+              "value": "AKS-SN"
             }
 
-Now that we have the address prefix for the APIM subnet we can call "NSG-ExistingSubnet" using the following:  
+Now that we have the address prefix for the AKS subnet we can call "NSG-Empty-ExistingSubnet" using the following:  
 
             "virtualNetworkName": {
               "value": "[variables('vnetName')]"
             },
             "subnetName": {
-              "value": "APIM-SN"
+              "value": "AKS-SN"
             },
             "addressPrefix": {
-              "value": "[reference('getAPIMAddressPrefix').outputs.addressPrefix.value]"
+              "value": "[reference('getAKSAddressPrefix').outputs.addressPrefix.value]"
             },
             "nsgName": {
-              "value": "APIM-NSG"
-            },
-            "securityRules": {
-              "value": [
-                "allow-443|Allow-SSL|Tcp|*|443|192.168.1.144/28|*|Allow|100|Inbound",
-                "allow-443-mgmt|Allow-Management|Tcp|*|3443|ApiManagement|VirtualNetwork|Allow|120|Inbound",
-                "allow-azure-storage|Allow-Storage-Account|Tcp|*|443|VirtualNetwork|Storage|Allow|100|Outbound",
-                "allow-azure-ad|Allow-Azure-AD|Tcp|*|443|VirtualNetwork|AzureActiveDirectory|Allow|110|Outbound",
-                "allow-event-hub|Allow-EventHub|Tcp|*|5671-5672|VirtualNetwork|EventHub|Allow|120|Outbound",
-                "allow-event-hub-443|Allow-EventHub|Tcp|*|443|VirtualNetwork|EventHub|Allow|130|Outbound",
-                "allow-file-share|Allow-FileShare|Tcp|*|445|VirtualNetwork|Storage|Allow|140|Outbound",
-                "allow-health-status|Allow-Health-Status|Tcp|*|1886|VirtualNetwork|AzureCloud|Allow|150|Outbound",
-                "allow-azure-monitor|Allow-Azure-Monitor|Tcp|*|443|VirtualNetwork|AzureMonitor|Allow|160|Outbound",
-                "allow-azure-cache-ob|Allow-Azure-Cahce|Tcp|*|6381-6383|VirtualNetwork|VirtualNetwork|Allow|170|Outbound",
-                "allow-azure-cache-ib|Allow-Azure-Cahce|Tcp|*|6381-6383|VirtualNetwork|VirtualNetwork|Allow|130|Inbound",
-                "allow-rate-limit-ib|Allow-Rate-Limit-Policy|UDP|*|4290|VirtualNetwork|VirtualNetwork|Allow|140|Inbound",
-                "allow-rate-limit-ob|Allow-Rate-Limit-Policy|UDP|*|4290|VirtualNetwork|VirtualNetwork|Allow|180|Outbound",
-                "deny-all-inbound|Deny All|Tcp|*|*|*|*|Deny|500|Inbound",
-                "deny-all-outbound|Deny All|Tcp|*|*|*|*|Deny|500|Outbound"
-              ]
+              "value": "AKS-NSG"
             }
 
 ### Application Gateway Deployment  
@@ -354,47 +303,6 @@ Now that we have a Log Analytics Workspace we can use the Nested Template "AppGW
               "value": "[variables('applicationGatewayName')]"
             }  
 
-### Azure API Management Deployment  
-Next we need to deploy the APIM solution in "Internal" only mode. This means that the APIM instance will not have a public access point and only be private on our APIM-SN. The only way to access the instance is from either the Application Gateway or our Jump Box.  The APIM deployment also enbales both Applicaiton Insights and Log Analytics monitoring. So before deploying APIM you need to deploy both of these resources.
-
-To deploy APIM you call the APIM template using the following:  
-
-                "apimname": {
-                    "value": "[variables('apimName')]"
-                },
-                "sku": {
-                    "value": "[parameters('apimsku')]"
-                },
-                "capacity": {
-                    "value": "[parameters('apimcapacity')]"
-                },
-                "apimEmail": {
-                    "value": "[parameters('apimEmail')]"
-                },
-                "subnetID": {
-                    "value": "[reference('deployVNET').outputs.apimSubnetID.value]"
-                },
-                "publisherName": {
-                    "value": "[parameters('apimPublisherName')]"
-                },
-                "virtualNetworkType": {
-                    "value": "[parameters('apimVirtualNetworkType')]"
-                },
-                "disableGateway": {
-                  "value": false
-                },
-                "loggerName":{
-                  "value": "[variables('appInsightsName')]"
-                },
-                "workspaceID": {
-                  "value": "[reference('deployLogAnalytics').outputs.workspaceId.value]"
-                },
-                "appinsightsID": {
-                  "value": "[reference('deployAppInsights').outputs.appInsightsID.value]"
-                }    
-
-Because we are deploying APIM in Internal mode you have to pass in the value 'Internal' for   the "virtualNetworkType" parameter.  
-
 ### AKS Deployment  
 Next we will deploy our middle tier which runs AKS. The AKS cluster will be deployed privatley using Private Endpoints.  
 
@@ -506,113 +414,6 @@ Now we can execute the PrivateDNSARecord template with the following:
             },
             "recordValue": {
               "value": "[reference('getACRNICIP').outputs.nicIP.value]"
-            }
-
-### Azure SQL with Private Endpoint  
-We'll go through a simular process to create an Azure SQL Database with a Private Endpoint. To deploy this through the template we'll utilize a three step process:  
-
-1) Create the Azure SQL Database using the SQLDB template  
-
-            "collation": {
-              "value": "SQL_Latin1_General_CP1_CI_AS"
-            },
-            "databaseName": {
-                "value": "[variables('sqlDatabaseName')]"
-            },
-            "tier": {
-                "value": "GeneralPurpose"
-            },
-            "skuName": {
-                "value": "GP_S_Gen5_24"
-            },
-            "maxSizeBytes": {
-                "value": 1099511627776
-            },
-            "sampleName": {
-                "value": ""
-            },
-            "serverName": {
-                "value": "[variables('sqlServerName')]"
-            },
-            "zoneRedundant": {
-                "value": false
-            },
-            "licenseType": {
-                "value": ""
-            },
-            "readScaleOut": {
-                "value": "Disabled"
-            },
-            "numberOfReplicas": {
-                "value": 0
-            },
-            "minCapacity": {
-                "value": "3"
-            },
-            "autoPauseDelay": {
-                "value": "180"
-            },
-            "enableADS": {
-                "value": false
-            },
-            "enableVA": {
-                "value": false
-            },
-            "useVAManagedIdentity": {
-                "value": true
-            },
-            "administratorLogin": {
-              "value": "[parameters('adminUsername')]"
-            },
-            "administratorLoginPassword": {
-                "value": "[parameters('adminPassword')]"
-            }
-
-2) Now that the Azure SQL Database is created we can create the Private Endpoint for it using the PrivateEndpoint template  
-
-          "peName": {
-            "value": "[concat(variables('sqlServerName'),'_pe')]"
-          },
-          "resourceID": {
-            "value": "[reference('deploySqlDb').outputs.sqlServerId.value]"
-          },
-          "vnetID": {
-            "value": "[reference('deployVNET').outputs.vnetId.value]"
-          },
-          "groupID": {
-            "value": "SqlServer"
-          }  
-
-3) Next we need to create the DNS record so we resolve to the private IP Address. We will utilize two templates for this. The PrivateDNSZone template will create the Zone and attach it to the VNet and the PrivateDNSARecord will add the A record for the newly created Private Endpoint.  
-
-We can create the DNS Zone calling PrivateDNSZone and prividing the following:  
-
-            "zone_name": {
-              "value": "privatelink.database.windows.net"
-            },
-            "vnet_id": {
-              "value": "[reference('deployVNET').outputs.vnetID.value]"
-            }
-            
-
-To add the A record from our Private Endpoint we need to first get the IP Address of the virtual nic created by the Private Endpoint using "GetNicIP" template and then call the PrivateDNSARecord template with this value.  
-
-First the GetNicIP we call with the following:  
-
-          "nicID": {
-              "value": "[reference('deploySqlServerPE').outputs.nicID.value]"
-            } 
-
-Now we can execute the PrivateDNSARecord template with the following: 
-
-           "zone_name": {
-              "value": "privatelink.database.windows.net"
-            },
-            "recordname": {
-              "value": "[variables('sqlServerName')]"
-            },
-            "recordValue": {
-              "value": "[reference('getSqlServerNICIP').outputs.nicIP.value]"
             }
 
 ### Admin Jump Host   

@@ -71,7 +71,6 @@
                     Install-PackageProvider -Name NuGet -RequiredVersion 2.8.5.201 -Force
                     Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
                     Install-Package -Name docker -ProviderName DockerMsftProvider -Force
-                    Install-Module -Name AZ -Force
                     Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\DSC -Name ModuledInstalled -Value "True"
                     
 
@@ -104,10 +103,10 @@
                 $dbConnectionString="Server=tcp:$sqlName.database.windows.net,1433;Initial Catalog=$dbName;Persist Security Info=False;User ID=azureuser;Password=$sqlPwd;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
                 $dbConnectionString | out-file c:\aksdeploy\log.txt -Append
 
-                $b64Connection = $dbConnectionString | openssl base64
-                $b64saName = $saName | openssl base64
-                $b64saKey = $saKey | openssl base64
-                $b64aiKey = $aiKey | openssl base64
+                $b64Connection = ($dbConnectionString | openssl base64) -replace " ",""
+                $b64saName = ($saName | openssl base64) -replace " ",""
+                $b64saKey = ($saKey | openssl base64) -replace " ",""
+                $b64aiKey = ($aiKey | openssl base64) -replace " ",""
 
                 
                 $file = get-content c:\aksdeploy\secrets.yaml
