@@ -108,6 +108,26 @@
                 $b64saKey = ($saKey | openssl base64) -replace " ",""
                 $b64aiKey = ($aiKey | openssl base64) -replace " ",""
 
+                $rawb64Connection = $dbConnectionString | openssl base64
+                $b64Connection=$null
+                foreach($line in $rawb64Connection) {
+                    $b64Connection+=$line
+                }
+                $rawb64saName = $saName | openssl base64
+                $b64saName = $null
+                foreach($line in $rawb64saName) {
+                    $b64saName+=$line
+                }
+                $rawb64saKey=$saKey | openssl base64
+                $b64saKey = $null
+                foreach($line in $rawb64saKey) {
+                    $b64saKey+=$line
+                }
+                $rawb64aiKey=$aiKey | openssl base64
+                $b64aiKey = $null
+                foreach($line in $rawb64aiKey) {
+                    $b64aiKey+=$line
+                }
                 
                 $file = get-content c:\aksdeploy\secrets.yaml
                 $file -replace '<CONNECTIONSTRING>',"$b64Connection" | out-file c:\aksdeploy\secrets.yaml

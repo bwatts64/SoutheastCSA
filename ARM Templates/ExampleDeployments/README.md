@@ -453,7 +453,108 @@ Once the VM is deployed we want to enable VM Insights on the virtual machine usi
               "value": "[reference('deployLogAnalytics').outputs.workspaceId.value]"
             }
 
+### RBAC Roles  
+In order to make this a functioning application we need to apply several roles.  
+
+#### AKS Network Contributor  
+For AKS to be able to interact with our Virtual Network it needs the Managed Identity to have Network Contributor access. We provide this access using the RBACRoleAssignment template and passing in the following parameters:  
+
+            "roleAssignmentName": {
+              "value": "[parameters('aksNetworkGuid')]"
+            },
+            "roleDefinitionId": {
+              "value": "4d97b98b-1d4f-4787-a291-c67834d212e7"
+            },
+            "principalId": {
+              "value": "[reference('deployAKSCluster').outputs.aksPrincipalId.value]"
+            },
+            "scope": {
+              "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
+            }
+          }  
+
+#### AKS ACR Pull  
+For AKS to be able to pull images from ACR we need to assign the AKS Managed Identity the ACR Pull role. We provide this access using the RBACRoleAssignment template and passing in the following parameters:  
+
+            "roleAssignmentName": {
+              "value": "[parameters('aksACRGuid')]"
+            },
+            "roleDefinitionId": {
+              "value": "7f951dda-4ed3-4680-a7ca-43fe172d538d"
+            },
+            "principalId": {
+              "value": "[reference('deployAKSCluster').outputs.poolPrincipalId.value]"
+            }  
+
+#### Jump Box Managed Identity  
+To conigure the environment we exicute a DSC script on the Jump Box. Because we configure sever resources in the script the Managed Identity is grated the Contributor role on the Resource Group.  We provide this access using the RBACRoleAssignment template and passing in the following parameters:  
+
+            "roleAssignmentName": {
+              "value": "[parameters('guid')]"
+            },
+            "roleDefinitionId": {
+              "value": "b24988ac-6180-42a0-ab88-20f7382dd24c"
+            },
+            "principalId": {
+              "value": "[reference('deployJumpBox').outputs.principalID.value]"
+            },
+            "scope": {
+              "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
+            }  
+
+### Configuring the Environment through DSC  
+Now that the infrastructure is deployed we can utilize PowerShell DSC to deploy the environment. In the DSC folder there is a "PrepareJumpBox.zip" that runs a DSC script for this environment. At a high level this script will accomplish the following:  
+
+- Install Tools on the Jump Box  
+  -- Kubectl  
+  -- Azure CLI  
+  -- Choco  
+  -- Nuget  
+  -- Helm  
+  -- Docker    
+- Download and customize "ingress-demo.yaml" from the GitHub repo  
+- Create ingress-basic namespace in Kubernetes  
+- Upload the docker.io/neilpeterson/aks-helloworld:v1 image to our ACR  
+- Deploy the "ingress-demo.yaml" config to Kubernetes  
+
+To deploy this DSC configuration we use the DSCExtension template and provide the following parameters:  
+
+            "vmName": {
+              "value": "[variables('jumpName')]"
+            },
+            "configModuleURL": {
+              "value": "[variables('jumpConfigModuleURL')]"
+            },
+            "configFunction": {
+              "value": "[variables('jumpConfigFunction')]"
+            },
+            "lbIP": {
+              "value": "[parameters('lbIP')]"
+            },
+            "acrName": {
+              "value": "[variables('acrName')]"
+            },
+            "aksName": {
+              "value": "[variables('AksresourceName')]"
+            },
+            "gwName": {
+              "value": "[variables('applicationGatewayName')]"
+            },
+            "rgName": {
+              "value": "[parameters('resourceGroup')]"
+            }
+
 ### Azure Bastion Host   
 In order to access our Jump Box with no VPN or Public IP Address we will utilize the Azure Bastion service.  
 
 We can deploy an Azure Bastion Host utilizing the "AzureBastion" template and providing the following parameters:
+
+            "bastionHostName": {
+                "value": "[variables('bastionHostName')]"
+            },
+            "subnetId": {
+                "value": "[concat(reference('deployVNET').outputs.vnetId.value,'/subnets/AzureBastionSubnet')]"
+            },
+            "publicIpId": {
+                "value": "[reference('deployAzureBastionPIP').outputs.publicIPID.value]"
+            }
