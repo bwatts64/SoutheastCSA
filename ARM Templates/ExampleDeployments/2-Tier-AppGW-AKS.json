@@ -10,6 +10,18 @@
         "type": "string",
         "defaultValue": "testarm"
       },
+      "keyVaultResourceGroup": {
+          "type": "string"
+      },
+      "keyVaultName": {
+        "type": "string"
+      },
+      "certificates": {
+          "type": "array",
+          "defaultValue": [
+            "ARMCert|ARM/df47f485ecb1455d98eae9a950af6f47",
+          ]
+      },
       "addressRange": {
         "type": "String",
         "defaultValue":"192.168.1.0/24",
@@ -49,16 +61,6 @@
       "appgwMaxCapacity": {
           "type": "int",
           "defaultValue": 3
-      },
-      "certificates": {
-          "type": "array",
-          "defaultValue": [
-            "ARMCert|ARM/df47f485ecb1455d98eae9a950af6f47",
-          ]
-      },
-      "keyVaultResourceGroup": {
-          "type": "string",
-          "defaultValue": "Lab"
       },
       "kubernetesVersion": {
         "type": "string",
@@ -142,7 +144,6 @@
       "appInsightsName": "[concat(parameters('deploymentPrefix'),'ai',uniqueString(parameters('resourceGroup')))]",
       "vnetName": "[concat(parameters('deploymentPrefix'),'vnet',uniqueString(parameters('resourceGroup')))]",
       "applicationGatewayName": "[concat(parameters('deploymentPrefix'),'appgw',uniqueString(parameters('resourceGroup')))]",
-      "keyVaultName": "labVaultwb",
       "acrName": "[concat(parameters('deploymentPrefix'),'acr',uniqueString(parameters('resourceGroup')))]",
       "AksresourceName":"[concat(parameters('deploymentPrefix'),'-AKSResource')]",
       "nodeResourceGroup":"[concat(parameters('deploymentPrefix'),'-AKSRG',uniqueString(parameters('resourceGroup')))]",
@@ -458,7 +459,7 @@
           },
           "parameters": {
             "keyVaultName": {
-                "value": "[variables('keyVaultName')]"
+                "value": "[parameters('keyVaultName')]"
             },
             "secrets": {
                 "value": [
@@ -520,7 +521,7 @@
                 ]
             },
             "keyVaultName": {
-              "value": "[variables('keyVaultName')]"
+              "value": "[parameters('keyVaultName')]"
             },
             "identityID": {
                 "value": "[reference('createManagedIdentity').outputs.resourceId.value]"

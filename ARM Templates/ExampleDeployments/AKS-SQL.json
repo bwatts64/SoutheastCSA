@@ -1056,7 +1056,7 @@
         }
       },
       {
-        "name": "allowSQLVNet",
+        "name": "allowAKSVNet",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
@@ -1325,6 +1325,70 @@
             },
             "scope": {
               "value": "[concat(subscription().id,'/resourceGroups/',parameters('resourceGroup'))]"
+            }
+          }
+        }
+      },
+            {
+        "name": "encodeBase64",
+        "comments":"",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "deployJumpBox"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('deploymentScriptExtension')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "vmName": {
+              "value": "[variables('jumpName')]"
+            },
+            "configModuleURL": {
+              "value": "[variables('jumpConfigModuleURL')]"
+            },
+            "configFunction": {
+              "value": "[variables('jumpConfigFunction')]"
+            },
+            "lbIP": {
+              "value": "[parameters('lbIP')]"
+            },
+            "acrName": {
+              "value": "[variables('acrName')]"
+            },
+            "aksName": {
+              "value": "[variables('AksresourceName')]"
+            },
+            "gwName": {
+              "value": "[variables('applicationGatewayName')]"
+            },
+            "rgName": {
+              "value": "[parameters('resourceGroup')]"
+            },
+            "saName": {
+                "value": "[variables('saName')]"
+            },
+            "aiKey": {
+                "value": "[reference('deployAppInsights').outputs.aiKey.value]"
+            },
+            "sqlName": {
+                "value": "[variables('sqlServerName')]"
+            },
+            "dbName": {
+                "value": "[variables('sqlDatabaseName')]"
+            },
+            "sqlAdmin": {
+                "value": "[parameters('adminUserName')]"
+            },
+            "sqlPwd": {
+                "value": "[parameters('adminPassword')]"
+            },
+            "saKey": {
+              "value": "[reference('deploySAAccount').outputs.saKey.value]"
             }
           }
         }
