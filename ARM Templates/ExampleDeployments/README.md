@@ -641,7 +641,7 @@ For details on the AKS solution behight this check out solution on GitHub. [AKS 
 
 You can utilize the below link to deploy this solution to your environment.  
 
-[![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/ExampleDeployments/2-Tier-AppGW-AKS.json)  
+[![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/ExampleDeployments/3-Tier-AppGW-AKS-SQL.json)  
 
 
 ### Deploying Solution  
