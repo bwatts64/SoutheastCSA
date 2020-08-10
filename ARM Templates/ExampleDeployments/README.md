@@ -637,6 +637,13 @@ This architecture adds on to the [Simple Web Application deployed in AKS and exp
 
 <img src="./images/3-Tier-AppGW-AKS-SQL.png" alt="Environment"  Width="900">  
 
+For details on the AKS solution behight this check out solution on GitHub. [AKS Demo App](https://github.com/ThorstenHans/aks-demo-app)  
+
+You can utilize the below link to deploy this solution to your environment.  
+
+[![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/ExampleDeployments/2-Tier-AppGW-AKS.json)  
+
+
 ### Deploying Solution  
 
 #### Pre-Req  
