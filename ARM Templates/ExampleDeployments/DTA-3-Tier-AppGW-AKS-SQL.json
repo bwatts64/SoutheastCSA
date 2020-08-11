@@ -21,7 +21,7 @@
       "certificates": {
           "type": "array",
           "metadata": {
-            "description": "Display name and cert id. ex: ARMCert|ARM/df47f485ecb1455d98eae9a950af6f47"
+            "description": "Display name and cert id. ex: [\"ARMCert|ARM/df47f485ecb1455d98eae9a950af6f47\"]"
           }
       },
       "addressRange": {
