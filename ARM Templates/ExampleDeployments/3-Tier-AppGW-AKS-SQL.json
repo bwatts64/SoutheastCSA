@@ -459,12 +459,36 @@
         }
       },
       {
-        "name": "getSharedAddressPrefix",
+        "name": "getBastionAddressPrefix",
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[parameters('resourceGroup')]",
         "dependsOn": [
           "deployDataNSG"
+        ],
+        "properties": {
+          "mode": "Incremental",
+          "templateLink": {
+            "uri": "[variables('getSubnetAddressPrefixTemplateURL')]",
+            "contentVersion": "1.0.0.0"
+          },
+          "parameters": {
+            "vnetName": {
+              "value": "[variables('vnetName')]"
+            },
+            "subnetName": {
+              "value": "AzureBastionSubnet"
+            }
+          }
+        }
+      },
+      {
+        "name": "getSharedAddressPrefix",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2018-05-01",
+        "resourceGroup": "[parameters('resourceGroup')]",
+        "dependsOn": [
+          "getBastionAddressPrefix"
         ],
         "properties": {
           "mode": "Incremental",
