@@ -32,7 +32,7 @@ This architecture is made of of the following resources:
 
 This is an example of a simple web application being deployed in AKS. The deployment does not expose AKS directly but requires external users to go throuh the Application Gateway to access the website. We will secure the traffic between the subnets using Network Security Groups with the added protection of the WAF being utilized by the Application Gateway. ACR will Private Endpoints and not allow access to their public endpoints.  
 
-[![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/ExampleDeployments/DTA-2-Tier-AppGW-AKS.json)  
+[![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fbwatts64%2FSoutheastCSA%2Fmaster%2FARM%20Templates%2FExampleDeployments%2FDTA-2-Tier-AppGW-AKS.json)  
 
 ### Demo Script  
 Starting out the demo we want to imphasize that we are starting with nothing deployed. You can go into the portal and show that the resource group doesn't exists. Once you've shown that the resource group is empty go ahead and kick off the deployment. This will take a ~20 minutes to deploy so you want to start this off asap.  
@@ -641,7 +641,7 @@ For details on the AKS solution behight this check out solution on GitHub. [AKS 
 
 You can utilize the below link to deploy this solution to your environment.  
 
-[![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/bwatts64/SoutheastCSA/master/ARM%20Templates/ExampleDeployments/DTA-3-Tier-AppGW-AKS-SQL.json)  
+[![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fbwatts64%2FSoutheastCSA%2Fmaster%2FARM%20Templates%2FExampleDeployments%2FDTA-3-Tier-AppGW-AKS-SQL.json)  
 
 
 ### Deploying Solution  
