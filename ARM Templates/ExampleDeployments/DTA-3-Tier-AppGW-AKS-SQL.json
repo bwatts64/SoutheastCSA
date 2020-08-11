@@ -6,10 +6,6 @@
         "type": "string",
         "defaultValue": "poc"
       },
-      "resourceGroup": {
-        "type": "string",
-        "defaultValue": "testarm"
-      },
       "keyVaultName": {
         "type": "string",
         "metadata": {
