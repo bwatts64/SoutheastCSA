@@ -1392,9 +1392,7 @@
         "type": "Microsoft.Resources/deployments",
         "apiVersion": "2018-05-01",
         "resourceGroup": "[resourceGroup().name]",
-        "dependsOn": [
-          "[resourceGroup().name]"
-        ],
+        "dependsOn": [],
         "properties": {
           "mode": "Incremental",
           "templateLink": {
