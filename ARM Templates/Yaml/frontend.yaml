@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: sessionbrowser
-          image: pocacrwzsnxsqzj2frk.azurecr.io/frontend:latest
+          image: <ACRNAME>.azurecr.io/frontend:latest
           ports:
             - containerPort: 80
           resources:    
