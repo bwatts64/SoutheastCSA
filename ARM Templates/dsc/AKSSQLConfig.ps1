@@ -177,7 +177,21 @@
                 kubectl apply -f c:\aksdeploy\backend.yaml -n ingress-basic --kubeconfig c:\aksdeploy\config >> c:\aksdeploy\log.txt
                 kubectl apply -f c:\aksdeploy\services.yaml -n ingress-basic --kubeconfig c:\aksdeploy\config >> c:\aksdeploy\log.txt
             }
-            TestScript = { $false }
+            TestScript = { 
+                $aksName = $using:aksName
+                $rgName = $using:rgName
+                
+                az login --identity
+                az aks get-credentials --resource-group $rgName --name $aksName --file c:\aksdeploy\config
+                $deployments = kubectl get deployments -n ingress-basic
+
+                if($deployments -match 'sessionbrowser-deployment' -and $deployments -match 'sessions-ms-deployments' -and $deployment -match 'votings-ms-deployment') {
+                    $true
+                }
+                else {
+                    $false
+                }
+            }
             GetScript = { }
         }
 
