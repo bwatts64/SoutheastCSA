@@ -148,11 +148,18 @@
                 $file -replace '<LBIP>',"$lbIP" | out-file c:\aksdeploy\services.yaml
 
                 "Getting AKS Creds" | out-file c:\aksdeploy\log.txt -Append
-                az aks get-credentials --resource-group testarm --name poc-AKSResource --file c:\aksdeploy\config >> c:\aksdeploy\log.txt
+                az aks get-credentials --resource-group $rgName --name $aksName --file c:\aksdeploy\config >> c:\aksdeploy\log.txt
                 "Creating namespace" | out-file c:\aksdeploy\log.txt -Append
                 kubectl create namespace ingress-basic --kubeconfig c:\aksdeploy\config >> c:\aksdeploy\log.txt
                 "ACr Login" | out-file c:\aksdeploy\log.txt -Append
-                az acr login --name $acrName --expose-token >> c:\aksdeploy\log.txt
+                try {
+                    az acr login --name $acrName --expose-token >> c:\aksdeploy\log.txt
+                    "Attach AKS to ACR" | out-file c:\aksdeploy\log.txt -Append
+                    az aks update -n $aksName -g $rgName --attach-acr $acrName >> c:\aksdeploy\log.txt
+                }
+                catch {
+                    Out-Null
+                }
                 "Attach AKS to ACR" | out-file c:\aksdeploy\log.txt -Append
                 az aks update -n $aksName -g $rgName --attach-acr $acrName >> c:\aksdeploy\log.txt
                 "Import image to ACR" | out-file c:\aksdeploy\log.txt -Append
