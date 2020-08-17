@@ -183,9 +183,9 @@
                 
                 az login --identity
                 az aks get-credentials --resource-group $rgName --name $aksName --file c:\aksdeploy\config
-                $deployments = kubectl get deployments -n ingress-basic
+                $deployments = kubectl get deployments -n ingress-basic --kubeconfig c:\aksdeploy\config 
 
-                if($deployments -match 'sessionbrowser-deployment' -and $deployments -match 'sessions-ms-deployments' -and $deployment -match 'votings-ms-deployment') {
+                if($deployments -match 'sessionbrowser-deployment' -and $deployments -match 'sessions-ms-deployment' -and $deployments -match 'votings-ms-deployment') {
                     $true
                 }
                 else {
