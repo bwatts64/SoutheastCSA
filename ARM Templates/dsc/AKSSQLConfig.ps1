@@ -185,21 +185,20 @@
             TestScript = { 
                 $aksName = $using:aksName
                 $rgName = $using:rgName
-                
-                az login --identity | Out-Null
-                az aks get-credentials --resource-group $rgName --name $aksName --file c:\aksdeploy\config | Out-Null
-
                 try {
+                    az login --identity | Out-Null
+                    az aks get-credentials --resource-group $rgName --name $aksName --file c:\aksdeploy\config | Out-Null
+
                     $deployments = kubectl get deployments -n ingress-basic --kubeconfig c:\aksdeploy\config 
+                
+                    if($deployments -match 'sessionbrowser-deployment' -and $deployments -match 'sessions-ms-deployment' -and $deployments -match 'votings-ms-deployment') {
+                        return $true
+                    }
+                    else {
+                        return $false
+                    }
                 }
                 catch {
-                    $deployments = $null
-                }
-
-                if($deployments -match 'sessionbrowser-deployment' -and $deployments -match 'sessions-ms-deployment' -and $deployments -match 'votings-ms-deployment') {
-                    return $true
-                }
-                else {
                     return $false
                 }
             }
