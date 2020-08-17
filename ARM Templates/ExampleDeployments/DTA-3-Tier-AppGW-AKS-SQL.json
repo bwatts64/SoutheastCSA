@@ -616,7 +616,8 @@
         "resourceGroup": "[resourceGroup().name]",
         "dependsOn": [
           "deployVNET",
-          "deployPublicIP1"
+          "deployPublicIP1",
+          "deployKeyVaultAccess"
         ],
         "properties": {
           "mode": "Incremental",
