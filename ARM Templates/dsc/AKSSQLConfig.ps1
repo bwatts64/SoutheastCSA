@@ -160,14 +160,19 @@
                 catch {
                     Out-Null
                 }
-                "Attach AKS to ACR" | out-file c:\aksdeploy\log.txt -Append
-                az aks update -n $aksName -g $rgName --attach-acr $acrName >> c:\aksdeploy\log.txt
-                "Import image to ACR" | out-file c:\aksdeploy\log.txt -Append
-                az acr import --name $acrName --source docker.io/bwatts64/frontend:latest --image frontend:latest >> c:\aksdeploy\log.txt
-                az acr import --name $acrName --source docker.io/bwatts64/sessions-cleaner:latest --image sessions-cleaner:latest >> c:\aksdeploy\log.txt
-                az acr import --name $acrName --source docker.io/bwatts64/votings:latest --image votings:latest >> c:\aksdeploy\log.txt
-                az acr import --name $acrName --source docker.io/bwatts64/sessions:latest --image sessions:latest >> c:\aksdeploy\log.txt
 
+		try {
+                	"Attach AKS to ACR" | out-file c:\aksdeploy\log.txt -Append
+                	az aks update -n $aksName -g $rgName --attach-acr $acrName >> c:\aksdeploy\log.txt
+                	"Import image to ACR" | out-file c:\aksdeploy\log.txt -Append
+                	az acr import --name $acrName --source docker.io/bwatts64/frontend:latest --image frontend:latest >> c:\aksdeploy\log.txt
+                	az acr import --name $acrName --source docker.io/bwatts64/sessions-cleaner:latest --image sessions-cleaner:latest >> c:\aksdeploy\log.txt
+                	az acr import --name $acrName --source docker.io/bwatts64/votings:latest --image votings:latest >> c:\aksdeploy\log.txt
+                	az acr import --name $acrName --source docker.io/bwatts64/sessions:latest --image sessions:latest >> c:\aksdeploy\log.txt
+		}
+		catch {
+			Out-Null
+		}
 
                 $saURI="$(az storage account show -n $saName -g $rgName --query primaryEndpoints.blob)sqlbackup/dbbackup.bacpac" -replace """",""
                 az sql db import -s $sqlName -n $dbName -g $rgName -p $sqlPwd -u $sqlAdmin --storage-key $saKey --storage-key-type StorageAccessKey --storage-uri $saURI
@@ -181,15 +186,21 @@
                 $aksName = $using:aksName
                 $rgName = $using:rgName
                 
-                az login --identity
-                az aks get-credentials --resource-group $rgName --name $aksName --file c:\aksdeploy\config
-                $deployments = kubectl get deployments -n ingress-basic --kubeconfig c:\aksdeploy\config 
+                az login --identity | Out-Null
+                az aks get-credentials --resource-group $rgName --name $aksName --file c:\aksdeploy\config | Out-Null
+
+                try {
+                    $deployments = kubectl get deployments -n ingress-basic --kubeconfig c:\aksdeploy\config 
+                }
+                catch {
+                    $deployments = $null
+                }
 
                 if($deployments -match 'sessionbrowser-deployment' -and $deployments -match 'sessions-ms-deployment' -and $deployments -match 'votings-ms-deployment') {
-                    $true
+                    return $true
                 }
                 else {
-                    $false
+                    return $false
                 }
             }
             GetScript = { }
