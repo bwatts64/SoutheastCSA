@@ -32,6 +32,20 @@ This architecture is made of of the following resources:
 
 This is an example of a simple web application being deployed in AKS. The deployment does not expose AKS directly but requires external users to go throuh the Application Gateway to access the website. We will secure the traffic between the subnets using Network Security Groups with the added protection of the WAF being utilized by the Application Gateway. ACR will Private Endpoints and not allow access to their public endpoints.  
 
+### Deploy to Azure  
+Use the below link to deploy this solution to Azure. ***Note*** Before deploying you need to load a certificate into an existing Key Vault to use in the Application Gateway.  
+
+You will need to provide the following Parameters when deploying:  
+
+| Name       | Description     | Example     |
+| :------------- | :----------: | -----------: |
+|  deploymentPrefix | Prefix value for naming resources   | POC    |
+| keyVaultResourceGroup   | Resource Group where the existing Key Vault is located | Lab |
+| keyVaultName   | Name of the Key Vault you uploaded the certificate to | poc-keyvault |  
+| certificate   | Certificate or Certificates used in your application gateway. Format is ["displayName\|cert identifier"] | ["ARMCert\|ARM/df47f485ecb1455d98eae9a950af6f47"] |  
+| adminUserName   | Username for both the Jump VM and SQL DB | azureUser |  
+| adminPassword   | Password for both the Jump VM and SQL DB | 1qaz@WSX3edc$RFV |    
+
 [![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fbwatts64%2FSoutheastCSA%2Fmaster%2FARM%20Templates%2FExampleDeployments%2FDTA-2-Tier-AppGW-AKS.json)  
 
 ### Demo Script  
@@ -640,6 +654,20 @@ This architecture adds on to the [Simple Web Application deployed in AKS and exp
 For details on the AKS solution behight this check out solution on GitHub. [AKS Demo App](https://github.com/ThorstenHans/aks-demo-app)  
 
 You can utilize the below link to deploy this solution to your environment.  
+
+### Deploy to Azure  
+Use the below link to deploy this solution to Azure. ***Note*** Before deploying you need to load a certificate into an existing Key Vault to use in the Application Gateway.  
+
+You will need to provide the following Parameters when deploying:  
+
+| Name       | Description     | Example     |
+| :------------- | :----------: | -----------: |
+|  deploymentPrefix | Prefix value for naming resources   | POC    |
+| keyVaultResourceGroup   | Resource Group where the existing Key Vault is located | Lab |
+| keyVaultName   | Name of the Key Vault you uploaded the certificate to | poc-keyvault |  
+| certificate   | Certificate or Certificates used in your application gateway. Format is ["displayName\|cert identifier"] | ["ARMCert\|ARM/df47f485ecb1455d98eae9a950af6f47"] |  
+| adminUserName   | Username for both the Jump VM and SQL DB | azureUser |  
+| adminPassword   | Password for both the Jump VM and SQL DB | 1qaz@WSX3edc$RFV | 
 
 [![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fbwatts64%2FSoutheastCSA%2Fmaster%2FARM%20Templates%2FExampleDeployments%2FDTA-3-Tier-AppGW-AKS-SQL.json)  
 

@@ -8,7 +8,11 @@
       },
       "resourceGroup": {
         "type": "string",
-        "defaultValue": "testarm"
+        "defaultValue": "pocAKS"
+      },
+      "location": {
+        "type": "string",
+        "defaultValue": "eastus"
       },
       "keyVaultName": {
         "type": "string",
@@ -25,77 +29,8 @@
       "certificates": {
           "type": "array",
           "metadata": {
-            "description": "Display name and cert id. ex: ARMCert|ARM/df47f485ecb1455d98eae9a950af6f47"
+            "description": "Display name and cert id. ex: [\"ARMCert|ARM/df47f485ecb1455d98eae9a950af6f47\"]"
           }
-      },
-      "addressRange": {
-        "type": "String",
-        "defaultValue":"192.168.1.0/24",
-        "metadata": {
-          "description": "Administrator password for the local admin account"
-        }
-      },
-      "subnets": {
-        "type": "array",
-        "defaultValue": [
-          "AKS-SN|192.168.1.0/25|Enabled",
-          "Data-SN|192.168.1.176/28|Disabled",
-          "Shared-SN|192.168.1.160/28|Enabled",
-          "AzureBastionSubnet|192.168.1.128/28|Enabled",
-          "AppGW-SN|192.168.1.144/28|Enabled"
-        ]
-      },
-      "appgwtier": {
-        "type": "string",
-        "defaultValue": "WAF_v2"
-      },
-      "appgwskuSize": {
-          "type": "string",
-          "defaultValue": "WAF_v2"
-      },
-      "appgwzones": {
-          "type": "array",
-          "defaultValue": [
-                  "1",
-                  "2",
-                  "3"
-          ]
-      },
-      "appgwMinCapacity": {
-          "type": "int",
-          "defaultValue": 1
-      },
-      "appgwMaxCapacity": {
-          "type": "int",
-          "defaultValue": 3
-      },
-      "location": {
-        "type": "string",
-        "defaultValue": "eastus"
-      },
-      "kubernetesVersion": {
-        "type": "string",
-        "defaultValue": "1.15.11"
-      },
-      "networkPlugin": {
-          "type": "string",
-          "defaultValue": "azure"
-      },
-      "enableRBAC": {
-          "type": "bool",
-          "defaultValue": true
-      },
-      "enablePrivateCluster": {
-          "type": "bool",
-          "defaultValue": true
-      },
-      "enableHttpApplicationRouting": {
-          "type": "bool",
-          "defaultValue": true
-      },
-      "networkPolicy": {
-          "type": "string",
-          "defaultValue": "calico"
       },
       "adminUserName": {
         "type": "string",
@@ -116,13 +51,6 @@
       "aksACRGuid": {
         "type": "string",
         "defaultValue": "[newGuid()]"
-      },
-      "lbIP": {
-        "type": "string",
-        "defaultValue": "192.168.1.126",
-        "metadata": {
-          "description": "IP address to be assigned to AKS LoadBalancer. Should be in the AKS-SN range"
-        }
       }
     },
     "variables": {
@@ -155,26 +83,50 @@
       "deployStorageURL": "[concat(variables('gitUri'),'/StorageAccount.json')]",
       "addVMInsightsURL": "[concat(variables('gitUri'),'/EnableVMInsights.json')]",
       "addDSCExtension": "[concat(variables('gitUri'),'/DSCAKS-SQL.json')]",
-      "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(parameters('resourceGroup')))]",
-      "appInsightsName": "[concat(parameters('deploymentPrefix'),'ai',uniqueString(parameters('resourceGroup')))]",
-      "vnetName": "[concat(parameters('deploymentPrefix'),'vnet',uniqueString(parameters('resourceGroup')))]",
-      "applicationGatewayName": "[concat(parameters('deploymentPrefix'),'appgw',uniqueString(parameters('resourceGroup')))]",
-      "acrName": "[concat(parameters('deploymentPrefix'),'acr',uniqueString(parameters('resourceGroup')))]",
+      "laName": "[concat(parameters('deploymentPrefix'),'la',uniqueString(resourceGroup().name))]",
+      "appInsightsName": "[concat(parameters('deploymentPrefix'),'ai',uniqueString(resourceGroup().name))]",
+      "vnetName": "[concat(parameters('deploymentPrefix'),'vnet',uniqueString(resourceGroup().name))]",
+      "applicationGatewayName": "[concat(parameters('deploymentPrefix'),'appgw',uniqueString(resourceGroup().name))]",
+      "acrName": "[concat(parameters('deploymentPrefix'),'acr',uniqueString(resourceGroup().name))]",
       "AksresourceName":"[concat(parameters('deploymentPrefix'),'-AKSResource')]",
-      "nodeResourceGroup":"[concat(parameters('deploymentPrefix'),'-AKSRG',uniqueString(parameters('resourceGroup')))]",
+      "nodeResourceGroup":"[concat(parameters('deploymentPrefix'),'-AKSRG',uniqueString(resourceGroup().name))]",
       "dnsPrefix":"[concat(variables('AksresourceName'),'-dns')]",
       "serviceCidr":"10.0.0.0/24",
       "dnsServiceIP":"10.0.0.10",
       "dockerBridgeCidr":"172.17.0.1/24",
-      "sqlDatabaseName": "[concat(parameters('deploymentPrefix'),'-sqldb',uniqueString(parameters('resourceGroup')))]",
-      "sqlServerName": "[concat(parameters('deploymentPrefix'),'-sqlserver',uniqueString(parameters('resourceGroup')))]",
+      "sqlDatabaseName": "[concat(parameters('deploymentPrefix'),'-sqldb',uniqueString(resourceGroup().name))]",
+      "sqlServerName": "[concat(parameters('deploymentPrefix'),'-sqlserver',uniqueString(resourceGroup().name))]",
       "jumpName": "[concat(parameters('deploymentPrefix'),'-jumpvm')]",
       "jumpSKU": "2019-Datacenter",
       "jumpSize": "Standard_DS1_v2",
-      "bastionHostName": "[concat(parameters('deploymentPrefix'),'-bastion',uniqueString(parameters('resourceGroup')))]",
+      "bastionHostName": "[concat(parameters('deploymentPrefix'),'-bastion',uniqueString(resourceGroup().name))]",
       "jumpConfigModuleURL": "[concat(variables('dscUri'),'/AKSSQLConfig.zip')]",
       "jumpConfigFunction": "AKSSQLConfig.ps1\\configJumpBox",
-      "saName": "[concat(tolower(parameters('deploymentPrefix')),'sa',tolower(uniqueString(parameters('resourceGroup'))))]"
+      "saName": "[concat(tolower(parameters('deploymentPrefix')),'sa',tolower(uniqueString(resourceGroup().name)))]",
+      "addressRange": "192.168.1.0/24",
+      "subnets": [
+          "AKS-SN|192.168.1.0/25|Enabled",
+          "Data-SN|192.168.1.176/28|Disabled",
+          "Shared-SN|192.168.1.160/28|Enabled",
+          "AzureBastionSubnet|192.168.1.128/28|Enabled",
+          "AppGW-SN|192.168.1.144/28|Enabled"
+      ],
+      "appgwtier": "WAF_v2",
+      "appgwskuSize": "WAF_v2",
+      "appgwzones": [
+                  "1",
+                  "2",
+                  "3"
+      ],
+      "appgwMinCapacity": 1,
+      "appgwMaxCapacity": 3,
+      "kubernetesVersion": "1.15.11",
+      "networkPlugin": "azure",
+      "enableRBAC": true,
+      "enablePrivateCluster": true,
+      "enableHttpApplicationRouting": true,
+      "networkPolicy": "calico",
+      "lbIP": "192.168.1.126",
     },
     "resources": [
       {
@@ -266,10 +218,10 @@
               "value": "[variables('vnetName')]"
             },
             "addressRange": {
-              "value": "[parameters('addressRange')]"
+              "value": "[variables('addressRange')]"
             },
             "subnets": {
-              "value": "[parameters('subnets')]"
+              "value": "[variables('subnets')]"
             }
           }
         }
@@ -643,19 +595,19 @@
                 "value": "[variables('applicationGatewayName')]"
             },
             "tier": {
-                "value": "[parameters('appgwtier')]"
+                "value": "[variables('appgwtier')]"
             },
             "skuSize": {
-                "value": "[parameters('appgwskuSize')]"
+                "value": "[variables('appgwskuSize')]"
             },
             "minCapacity": {
-                "value": "[parameters('appgwMinCapacity')]"
+                "value": "[variables('appgwMinCapacity')]"
             },
             "maxCapacity": {
-                "value": "[parameters('appgwMaxCapacity')]"
+                "value": "[variables('appgwMaxCapacity')]"
             },
             "zones": {
-                "value": "[parameters('appgwzones')]"
+                "value": "[variables('appgwzones')]"
             },
             "subnetID": {
                 "value": "[concat(reference('deployVNET').outputs.vnetId.value,'/subnets/AppGW-SN')]"
@@ -681,7 +633,7 @@
             },
             "backendAddresses": {
                 "value": [
-                  "[concat('AKSLB|', parameters('lbIP'))]"
+                  "[concat('AKSLB|', variables('lbIP'))]"
                 ]
             },
             "backendHttpSettings": {
@@ -895,22 +847,22 @@
                 "value": "[variables('dnsPrefix')]"
             },
             "kubernetesVersion": {
-                "value": "[parameters('kubernetesVersion')]"
+                "value": "[variables('kubernetesVersion')]"
             },
             "networkPlugin": {
-                "value": "[parameters('networkPlugin')]"
+                "value": "[variables('networkPlugin')]"
             },
             "enableRBAC": {
-                "value": "[parameters('enableRBAC')]"
+                "value": "[variables('enableRBAC')]"
             },
             "enablePrivateCluster": {
-                "value": "[parameters('enablePrivateCluster')]"
+                "value": "[variables('enablePrivateCluster')]"
             },
             "enableHttpApplicationRouting": {
-                "value": "[parameters('enableHttpApplicationRouting')]"
+                "value": "[variables('enableHttpApplicationRouting')]"
             },
             "networkPolicy": {
-                "value": "[parameters('networkPolicy')]"
+                "value": "[variables('networkPolicy')]"
             },
             "vnetSubnetID": {
                 "value": "[concat(reference('deployVNET').outputs.vnetId.value,'/subnets/AKS-SN')]"
@@ -1364,7 +1316,7 @@
               "value": "[variables('jumpConfigFunction')]"
             },
             "lbIP": {
-              "value": "[parameters('lbIP')]"
+              "value": "[variables('lbIP')]"
             },
             "acrName": {
               "value": "[variables('acrName')]"
