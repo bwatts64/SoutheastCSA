@@ -39,11 +39,14 @@ The Applicaiton Gateway in this solution assumes that you have an existing Key V
 
 [PowerShell Self-Signed Cert](https://docs.microsoft.com/en-us/azure/application-gateway/create-ssl-portal#create-a-self-signed-certificate)  
 
+#### Parameters
 When deploying the template you need to fill in the following parameters to point to your Key Vault:  
 
       "keyVaultResourceGroup": Name of the resource group where the key vault is located
       "keyVaultName": Name of the Key Vault that contains the certificate
       "certificates": This is an array and can contain multiple certificates. Each certificate should be formated with "DisplayName|<path to cert>". If you go to the uploaded certificate in Key Vault and click on it. There you will find the certificate identifier. Grab the last two sections.  
+  
+    
 
 <img src="./images/CertID.PNG" alt="CertID"  Width="600">  
 
@@ -675,7 +678,8 @@ You can utilize the below link to deploy this solution to your environment.
 The Applicaiton Gateway in this solution assumes that you have an existing Key Vault with a certificate to use for SSL encription. Before deploying this solution upload the certificate to be utilized into key vault. For demo purposes you could simply create a self-signed cert using PowerShell and upload that to Key Vault into the certificate store.  
 
 [PowerShell Self-Signed Cert](https://docs.microsoft.com/en-us/azure/application-gateway/create-ssl-portal#create-a-self-signed-certificate)  
-
+  
+#### Parameters
 When deploying the template you need to fill in the following parameters to point to your Key Vault:  
 
       "keyVaultResourceGroup": Name of the resource group where the key vault is located
