@@ -33,6 +33,20 @@ This architecture is made of of the following resources:
 This is an example of a simple web application being deployed in AKS. The deployment does not expose AKS directly but requires external users to go throuh the Application Gateway to access the website. We will secure the traffic between the subnets using Network Security Groups with the added protection of the WAF being utilized by the Application Gateway. ACR will Private Endpoints and not allow access to their public endpoints.  
 
 ### Deploy to Azure  
+
+#### Pre-Req  
+The Applicaiton Gateway in this solution assumes that you have an existing Key Vault with a certificate to use for SSL encription. Before deploying this solution upload the certificate to be utilized into key vault. For demo purposes you could simply create a self-signed cert using PowerShell and upload that to Key Vault into the certificate store.  
+
+[PowerShell Self-Signed Cert](https://docs.microsoft.com/en-us/azure/application-gateway/create-ssl-portal#create-a-self-signed-certificate)  
+
+When deploying the template you need to fill in the following parameters to point to your Key Vault:  
+
+      "keyVaultResourceGroup": Name of the resource group where the key vault is located
+      "keyVaultName": Name of the Key Vault that contains the certificate
+      "certificates": This is an array and can contain multiple certificates. Each certificate should be formated with "DisplayName|<path to cert>". If you go to the uploaded certificate in Key Vault and click on it. There you will find the certificate identifier. Grab the last two sections.  
+
+<img src="./images/CertID.PNG" alt="CertID"  Width="600">  
+
 Use the below link to deploy this solution to Azure. ***Note*** Before deploying you need to load a certificate into an existing Key Vault to use in the Application Gateway.  
 
 You will need to provide the following Parameters when deploying:  
@@ -656,6 +670,20 @@ For details on the AKS solution behight this check out solution on GitHub. [AKS 
 You can utilize the below link to deploy this solution to your environment.  
 
 ### Deploy to Azure  
+
+#### Pre-Req  
+The Applicaiton Gateway in this solution assumes that you have an existing Key Vault with a certificate to use for SSL encription. Before deploying this solution upload the certificate to be utilized into key vault. For demo purposes you could simply create a self-signed cert using PowerShell and upload that to Key Vault into the certificate store.  
+
+[PowerShell Self-Signed Cert](https://docs.microsoft.com/en-us/azure/application-gateway/create-ssl-portal#create-a-self-signed-certificate)  
+
+When deploying the template you need to fill in the following parameters to point to your Key Vault:  
+
+      "keyVaultResourceGroup": Name of the resource group where the key vault is located
+      "keyVaultName": Name of the Key Vault that contains the certificate
+      "certificates": This is an array and can contain multiple certificates. Each certificate should be formated with "DisplayName|<path to cert>". If you go to the uploaded certificate in Key Vault and click on it. There you will find the certificate identifier. Grab the last two sections.  
+
+<img src="./images/CertID.PNG" alt="CertID"  Width="600">  
+
 Use the below link to deploy this solution to Azure. ***Note*** Before deploying you need to load a certificate into an existing Key Vault to use in the Application Gateway.  
 
 You will need to provide the following Parameters when deploying:  
@@ -670,22 +698,6 @@ You will need to provide the following Parameters when deploying:
 | adminPassword   | Password for both the Jump VM and SQL DB | 1qaz@WSX3edc$RFV | 
 
 [![Deploy](images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fbwatts64%2FSoutheastCSA%2Fmaster%2FARM%20Templates%2FExampleDeployments%2FDTA-3-Tier-AppGW-AKS-SQL.json)  
-
-
-### Deploying Solution  
-
-#### Pre-Req  
-The Applicaiton Gateway in this solution assumes that you have an existing Key Vault with a certificate to use for SSL encription. Before deploying this solution upload the certificate to be utilized into key vault. For demo purposes you could simply create a self-signed cert using PowerShell and upload that to Key Vault into the certificate store.  
-
-[PowerShell Self-Signed Cert](https://docs.microsoft.com/en-us/azure/application-gateway/create-ssl-portal#create-a-self-signed-certificate)  
-
-When deploying the template you need to fill in the following parameters to point to your Key Vault:  
-
-      "keyVaultResourceGroup": Name of the resource group where the key vault is located
-      "keyVaultName": Name of the Key Vault that contains the certificate
-      "certificates": This is an array and can contain multiple certificates. Each certificate should be formated with "DisplayName|<path to cert>". If you go to the uploaded certificate in Key Vault and click on it. There you will find the certificate identifier. Grab the last two sections.  
-
-<img src="./images/CertID.PNG" alt="CertID"  Width="600">  
 
 ### Demo Script  
 Starting out the demo we want to imphasize that we are starting with nothing deployed. You can go into the portal and show that the resource group doesn't exists. Once you've shown that the resource group is empty go ahead and kick off the deployment. This will take a ~20 minutes to deploy so you want to start this off asap.  
